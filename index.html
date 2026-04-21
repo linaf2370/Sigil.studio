@@ -6,7 +6,7 @@
   <title>SIGIL</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500&family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@300;400;500&family=Bebas+Neue&family=Chakra+Petch:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Tenor+Sans&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -71,15 +71,12 @@
     }
 
     .project-tab:hover { background: rgba(255,255,255,0.02); }
-
     .project-tab.active { background: rgba(255,255,255,0.03); }
 
     .project-tab.active::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       height: 1.5px;
       background: var(--accent);
     }
@@ -108,7 +105,6 @@
       transition: color 0.1s;
       font-family: var(--font-ui);
     }
-
     .tab-close:hover { color: var(--muted); }
 
     #new-project-btn {
@@ -127,7 +123,6 @@
       flex-shrink: 0;
       transition: color 0.1s;
     }
-
     #new-project-btn:hover { color: var(--muted); }
     #new-project-btn::before { content: '[ '; }
     #new-project-btn::after  { content: ' ]'; }
@@ -192,7 +187,6 @@
       font-weight: 400;
       margin-bottom: 10px;
     }
-
     .field-label::before { content: '[ '; }
     .field-label::after  { content: ' ]'; }
 
@@ -231,7 +225,6 @@
     }
 
     .style-option:last-child { grid-column: 1 / -1; }
-
     .style-option input[type="radio"] { display: none; }
 
     .style-option label {
@@ -266,13 +259,8 @@
       transition: border-color 0.15s, background 0.15s;
       user-select: none;
     }
-
     #moodboard-zone:hover { border-color: var(--muted); }
-
-    #moodboard-zone.drag-over {
-      border-color: var(--muted);
-      background: var(--surface);
-    }
+    #moodboard-zone.drag-over { border-color: var(--muted); background: var(--surface); }
 
     .moodboard-prompt {
       text-align: center;
@@ -284,11 +272,7 @@
       pointer-events: none;
     }
 
-    .moodboard-thumbs {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .moodboard-thumbs { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .thumb-item {
       position: relative;
@@ -296,23 +280,15 @@
       height: 52px;
       flex-shrink: 0;
     }
-
-    .thumb-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     .thumb-remove {
       position: absolute;
-      top: 2px;
-      right: 2px;
+      top: 2px; right: 2px;
       background: rgba(14,14,14,0.8);
       color: var(--text);
       border: none;
-      width: 16px;
-      height: 16px;
+      width: 16px; height: 16px;
       font-size: 9px;
       cursor: pointer;
       display: flex;
@@ -321,7 +297,6 @@
       line-height: 1;
       transition: background 0.1s;
     }
-
     .thumb-remove:hover { background: rgba(14,14,14,1); }
 
     #moodboard-file-input { display: none; }
@@ -351,13 +326,8 @@
       cursor: pointer;
       transition: background 0.15s, opacity 0.15s;
     }
-
     #generate-btn:hover:not(:disabled) { background: var(--accent-dim); }
-
-    #generate-btn:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
+    #generate-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     /* ── CANVAS ───────────────────────────────────── */
     #canvas {
@@ -401,33 +371,19 @@
       transition: color 0.1s;
       flex-shrink: 0;
     }
-
     #clear-history-btn:hover { color: var(--muted); }
     #clear-history-btn::before { content: '[ '; }
     #clear-history-btn::after  { content: ' ]'; }
 
     /* ── CANVAS HISTORY ───────────────────────────── */
-    #canvas-history {
-      flex: 1;
-      overflow-y: auto;
-      min-height: 0;
-    }
-
+    #canvas-history { flex: 1; overflow-y: auto; min-height: 0; }
     #canvas-history::-webkit-scrollbar { width: 3px; }
     #canvas-history::-webkit-scrollbar-track { background: transparent; }
     #canvas-history::-webkit-scrollbar-thumb { background: #2a2a2a; }
 
-    .generation-block {
-      padding: 28px;
-    }
-
-    .generation-block + .generation-block {
-      border-top: 0.5px solid rgba(255,255,255,0.05);
-    }
-
-    .generation-block.stale .logo-slot {
-      opacity: 0.4;
-    }
+    .generation-block { padding: 28px; }
+    .generation-block + .generation-block { border-top: 0.5px solid rgba(255,255,255,0.05); }
+    .generation-block.stale .logo-slot { opacity: 0.4; }
 
     .generation-header {
       font-size: 9px;
@@ -460,57 +416,41 @@
       font-weight: 400;
     }
 
-    .slot-mark-wrap {
+    .slot-svg-wrap {
       background: #1a1a1a;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
       position: relative;
       flex-shrink: 0;
     }
 
-    .slot-mark-wrap.has-mark { cursor: pointer; }
-    .slot-mark-wrap.has-mark:hover { background: #1e1e1e; }
+    .slot-svg-wrap.has-svg { cursor: pointer; }
+    .slot-svg-wrap.has-svg:hover { background: #1e1e1e; }
 
-    .slot-mark-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    .slot-wordmark-wrap {
-      background: #111111;
-      border-top: 0.5px solid rgba(255,255,255,0.04);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 60px;
-    }
-
-    .slot-wordmark-wrap svg {
+    .slot-svg-wrap svg {
       display: block;
       width: 100%;
       height: auto;
     }
 
-    .slot-loading-inner {
+    .slot-svg-wrap img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .slot-loading-inner {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 18px;
+      padding: 32px 16px;
       pointer-events: none;
     }
 
     .loading-rect {
-      width: 72%;
-      height: 48%;
+      width: 60%;
+      height: 20px;
       background: #252525;
       animation: loading-pulse 2.2s ease-in-out infinite;
     }
@@ -534,17 +474,12 @@
       text-transform: uppercase;
       text-align: center;
       color: var(--accent);
-      padding: 12px 16px;
+      padding: 24px 16px;
       line-height: 1.8;
       pointer-events: none;
     }
 
-    .slot-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-height: 20px;
-    }
+    .slot-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 20px; }
 
     .tag {
       font-size: 9px;
@@ -552,14 +487,10 @@
       text-transform: lowercase;
       color: #3e3b38;
     }
-
     .tag::before { content: '[ '; }
     .tag::after  { content: ' ]'; }
 
-    .slot-exports {
-      display: flex;
-      gap: 8px;
-    }
+    .slot-exports { display: flex; gap: 8px; }
 
     .export-btn {
       flex: 1;
@@ -574,14 +505,8 @@
       cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-
-    .export-btn:hover:not(:disabled) {
-      color: var(--text);
-      border-color: rgba(255,255,255,0.3);
-    }
-
+    .export-btn:hover:not(:disabled) { color: var(--text); border-color: rgba(255,255,255,0.3); }
     .export-btn:disabled { opacity: 0.18; cursor: not-allowed; }
-
     .export-btn::before { content: '[ '; }
     .export-btn::after  { content: ' ]'; }
 
@@ -596,13 +521,12 @@
       align-items: center;
       justify-content: center;
     }
-
     #lightbox.hidden { display: none; }
 
     .lightbox-inner {
       display: flex;
       flex-direction: column;
-      width: min(700px, 88vw);
+      width: min(860px, 88vw);
     }
 
     .lb-meta {
@@ -632,44 +556,17 @@
       cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-
     .lb-close-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
     .lb-close-btn::before { content: '[ '; }
     .lb-close-btn::after  { content: ' ]'; }
 
-    #lb-mark-wrap {
+    #lb-svg-wrap {
       background: #1a1a1a;
       width: 100%;
-      aspect-ratio: 1 / 1;
-      max-height: 500px;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-
-    #lb-mark-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    #lb-wordmark-wrap {
-      background: #111111;
-      border-top: 1px solid var(--border);
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 80px;
-    }
-
-    #lb-wordmark-wrap svg {
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
+    #lb-svg-wrap svg { display: block; width: 100%; height: auto; }
+    #lb-svg-wrap img { display: block; width: 100%; height: auto; }
 
     .lb-export-row {
       display: flex;
@@ -690,7 +587,6 @@
       cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-
     .lb-export-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
     .lb-export-btn::before { content: '[ '; }
     .lb-export-btn::after  { content: ' ]'; }
@@ -787,11 +683,10 @@
       <span class="lb-meta-info" id="lb-meta-info">—</span>
       <button class="lb-close-btn" id="lb-close-btn">Close</button>
     </div>
-    <div id="lb-mark-wrap"></div>
-    <div id="lb-wordmark-wrap"></div>
+    <div id="lb-svg-wrap"></div>
     <div class="lb-export-row">
-      <button class="lb-export-btn" id="lb-png-btn">Export Mark PNG</button>
-      <button class="lb-export-btn" id="lb-svg-btn">Export Wordmark SVG</button>
+      <button class="lb-export-btn" id="lb-png-btn">Export PNG</button>
+      <button class="lb-export-btn" id="lb-svg-btn">Export SVG</button>
     </div>
   </div>
 </div>
@@ -799,7 +694,7 @@
 <script>
 // ── STATE ──────────────────────────────────────────
 const state = {
-  projects: [],          // [{id, brandName, brief, style, moodboardImages, moodboardAnalysis, generations}]
+  projects: [],
   currentProjectId: null,
   generating: false,
   lightboxGenId: null,
@@ -824,12 +719,12 @@ const lightbox        = $('lightbox');
 const projectsTabs    = $('projects-tabs');
 
 // ── UTILS ──────────────────────────────────────────
-function uid()        { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function fmtDate(d)   { return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase(); }
-function fmtTime(d)   { return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
-function slug(s)      { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sigil'; }
-function escHtml(s)   { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function wait(ms)     { return new Promise(r => setTimeout(r, ms)); }
+function uid()      { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function fmtDate(d) { return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase(); }
+function fmtTime(d) { return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+function slug(s)    { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sigil'; }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function wait(ms)   { return new Promise(r => setTimeout(r, ms)); }
 
 function toast(msg) {
   const el = document.createElement('div');
@@ -875,8 +770,7 @@ function initProjects() {
     try { state.projects = JSON.parse(saved); } catch { state.projects = []; }
   }
   if (!state.projects.length) {
-    const p = newProjectData(uid());
-    state.projects.push(p);
+    state.projects.push(newProjectData(uid()));
   }
   state.currentProjectId = (savedCurrent && state.projects.find(p => p.id === savedCurrent))
     ? savedCurrent : state.projects[0].id;
@@ -916,8 +810,8 @@ function syncCurrentProjectFromUI() {
   const p = getCurrentProject();
   if (!p) return;
   p.brandName = brandInput.value.trim();
-  p.brief = briefInput.value.trim();
-  p.style = document.querySelector('input[name="style"]:checked')?.value || 'wordmark';
+  p.brief     = briefInput.value.trim();
+  p.style     = document.querySelector('input[name="style"]:checked')?.value || 'wordmark';
 }
 
 function loadProjectIntoUI(p) {
@@ -931,7 +825,7 @@ function loadProjectIntoUI(p) {
   moodboardThumbs.style.display = imgs.length ? 'flex' : 'none';
   renderMoodboardThumbs(imgs);
   metaBrand.textContent = p.brandName ? p.brandName.toUpperCase() : '—';
-  metaDate.textContent = fmtDate(new Date());
+  metaDate.textContent  = fmtDate(new Date());
   metaCount.textContent = p.generations.length ? `${p.generations.length} Generation${p.generations.length > 1 ? 's' : ''}` : '—';
   renderHistory(p);
 }
@@ -988,8 +882,7 @@ function readBase64(file) {
           else        { w = Math.round(w * MAX / h); h = MAX; }
         }
         const canvas = document.createElement('canvas');
-        canvas.width  = w;
-        canvas.height = h;
+        canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
         resolve({ dataUrl, base64: dataUrl.split(',')[1] });
@@ -1022,8 +915,7 @@ function renderMoodboardThumbs(imgs) {
       if (p) { p.moodboardImages.splice(i, 1); renderMoodboard(); saveProjects(); }
     });
     const el = document.createElement('img');
-    el.src = img.dataUrl;
-    el.alt = '';
+    el.src = img.dataUrl; el.alt = '';
     item.appendChild(el);
     item.appendChild(rm);
     moodboardThumbs.appendChild(item);
@@ -1051,11 +943,7 @@ function buildGenerationBlock(gen, isLatest) {
 
   const grid = document.createElement('div');
   grid.className = 'canvas-slots';
-
-  [0, 1, 2].forEach(i => {
-    grid.appendChild(buildSlotEl(gen, i));
-  });
-
+  [0, 1, 2].forEach(i => grid.appendChild(buildSlotEl(gen, i)));
   block.appendChild(grid);
   return block;
 }
@@ -1068,13 +956,9 @@ function buildSlotEl(gen, i) {
   label.className = 'slot-label';
   label.textContent = `Option 0${i + 1}`;
 
-  const markWrap = document.createElement('div');
-  markWrap.className = 'slot-mark-wrap';
-  markWrap.id = `slot-mark-${gen.id}-${i}`;
-
-  const wordmarkWrap = document.createElement('div');
-  wordmarkWrap.className = 'slot-wordmark-wrap';
-  wordmarkWrap.id = `slot-wordmark-${gen.id}-${i}`;
+  const svgWrap = document.createElement('div');
+  svgWrap.className = 'slot-svg-wrap';
+  svgWrap.id = `slot-svg-${gen.id}-${i}`;
 
   const tagsEl = document.createElement('div');
   tagsEl.className = 'slot-tags';
@@ -1099,35 +983,34 @@ function buildSlotEl(gen, i) {
   exportsEl.appendChild(btnSvg);
 
   slot.appendChild(label);
-  slot.appendChild(markWrap);
-  slot.appendChild(wordmarkWrap);
+  slot.appendChild(svgWrap);
   slot.appendChild(tagsEl);
   slot.appendChild(exportsEl);
 
   const p = getCurrentProject();
   const brandName = p ? p.brandName : 'sigil';
 
-  markWrap.addEventListener('click', () => {
+  svgWrap.addEventListener('click', () => {
     const r = gen.results[i];
-    if (r?.imageUrl || r?.markImageUrl) openLightbox(gen.id, i);
+    if (r?.svg || r?.wordmarkSvg || r?.imageUrl || r?.markImageUrl) openLightbox(gen.id, i);
   });
 
   btnPng.addEventListener('click', () => {
     const r = gen.results[i];
-    const url = r?.imageUrl || r?.markImageUrl;
-    if (url) exportPNG(url, `${slug(brandName)}-mark-${i + 1}.png`);
+    const svgContent = r?.svg || r?.wordmarkSvg;
+    if (svgContent) exportPNG(svgContent, `${slug(brandName)}-logo-${i + 1}.png`);
   });
 
   btnSvg.addEventListener('click', () => {
     const r = gen.results[i];
-    if (r?.wordmarkSvg) exportSVG(r.wordmarkSvg, `${slug(brandName)}-wordmark-${i + 1}.svg`);
+    const svgContent = r?.svg || r?.wordmarkSvg;
+    if (svgContent) exportSVG(svgContent, `${slug(brandName)}-logo-${i + 1}.svg`);
   });
 
   if (gen.results[i]) {
     populateSlot(gen, i);
   } else {
-    markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
-    wordmarkWrap.innerHTML = '<div style="padding:16px;display:flex;align-items:center;justify-content:center;width:100%;"><div class="loading-label">Wordmark…</div></div>';
+    svgWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
   }
 
   return slot;
@@ -1137,36 +1020,30 @@ function populateSlot(gen, i) {
   const r = gen.results[i];
   if (!r) return;
 
-  const imageUrl = r.imageUrl || r.markImageUrl;
-  const wordmarkSvg = r.wordmarkSvg;
+  const svgContent = r.svg || r.wordmarkSvg;
+  const imageUrl   = r.imageUrl || r.markImageUrl;
 
-  const markWrap = $(`slot-mark-${gen.id}-${i}`);
-  if (markWrap && imageUrl) {
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = '';
-    markWrap.innerHTML = '';
-    markWrap.appendChild(img);
-    markWrap.classList.add('has-mark');
-  }
-
-  const wordmarkWrap = $(`slot-wordmark-${gen.id}-${i}`);
-  if (wordmarkWrap && wordmarkSvg && !wordmarkWrap.classList.contains('has-wordmark')) {
-    wordmarkWrap.innerHTML = wordmarkSvg;
-    const svgEl = wordmarkWrap.querySelector('svg');
-    if (svgEl) {
-      svgEl.style.width = '100%';
-      svgEl.style.height = 'auto';
-      svgEl.style.display = 'block';
+  const svgWrap = $(`slot-svg-${gen.id}-${i}`);
+  if (svgWrap && !svgWrap.classList.contains('has-svg')) {
+    if (svgContent) {
+      svgWrap.innerHTML = svgContent;
+      const svgEl = svgWrap.querySelector('svg');
+      if (svgEl) { svgEl.style.width = '100%'; svgEl.style.height = 'auto'; svgEl.style.display = 'block'; }
+      svgWrap.classList.add('has-svg');
+    } else if (imageUrl) {
+      const img = document.createElement('img');
+      img.src = imageUrl; img.alt = '';
+      svgWrap.innerHTML = '';
+      svgWrap.appendChild(img);
+      svgWrap.classList.add('has-svg');
     }
-    wordmarkWrap.classList.add('has-wordmark');
   }
 
   const btnPng = $(`export-png-${gen.id}-${i}`);
-  if (btnPng) btnPng.disabled = !imageUrl;
+  if (btnPng) btnPng.disabled = !(svgContent || imageUrl);
 
   const btnSvg = $(`export-svg-${gen.id}-${i}`);
-  if (btnSvg) btnSvg.disabled = !wordmarkSvg;
+  if (btnSvg) btnSvg.disabled = !svgContent;
 
   const tagsEl = $(`tags-${gen.id}-${i}`);
   if (tagsEl && r.tags && !tagsEl.children.length) {
@@ -1175,10 +1052,10 @@ function populateSlot(gen, i) {
 }
 
 function setSlotError(genId, i, msg) {
-  const markWrap = $(`slot-mark-${genId}-${i}`);
-  if (markWrap) {
-    markWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
-    markWrap.classList.remove('has-mark');
+  const svgWrap = $(`slot-svg-${genId}-${i}`);
+  if (svgWrap) {
+    svgWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
+    svgWrap.classList.remove('has-svg');
   }
 }
 
@@ -1186,8 +1063,8 @@ function setSlotError(genId, i, msg) {
 async function generate() {
   const brand = brandInput.value.trim();
   const brief = briefInput.value.trim();
-  if (!brand)         { toast('Enter a brand name.'); return; }
-  if (!brief)         { toast('Enter a brief.'); return; }
+  if (!brand) { toast('Enter a brand name.'); return; }
+  if (!brief) { toast('Enter a brief.');      return; }
   if (state.generating) return;
 
   state.generating = true;
@@ -1237,9 +1114,9 @@ async function generate() {
       if (!gen.results[i]) setSlotError(gen.id, i, err.message || 'Generation failed.');
     });
   } finally {
-    state.generating         = false;
-    generateBtn.disabled     = false;
-    generateBtn.textContent  = 'Generate';
+    state.generating        = false;
+    generateBtn.disabled    = false;
+    generateBtn.textContent = 'Generate';
     saveProjects();
   }
 }
@@ -1255,99 +1132,43 @@ async function analyzeMoodboard(images) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || `Analysis failed (${res.status})`);
   }
-  const data = await res.json();
-  return data.analysis;
+  return (await res.json()).analysis;
 }
 
 // ── API: LOGO GENERATION ───────────────────────────
 const VARIATION_HINTS = [
-  'Variation 1: Expected typographic interpretation — refined, considered, directly responsive to the brief',
-  'Variation 2: Bolder typographic move — push tracking, scale contrast, or weight further than feels safe',
-  'Variation 3: Unexpected typographic register — different structural approach, different scale relationship, something that surprises but feels exactly right',
+  'Variation 1: The typographic direction. The brand name IS the logo — one strong typographic decision, no mark.',
+  'Variation 2: The mark + type direction. One smart geometric mark with a concept connected to the brief, paired with clean type.',
+  'Variation 3: The unexpected direction. Break one rule deliberately — surprise the client but make it feel immediately right.',
 ];
 
 async function generateLogo(p, gen, i) {
-  const markWrapId     = `slot-mark-${gen.id}-${i}`;
-  const wordmarkWrapId = `slot-wordmark-${gen.id}-${i}`;
-
-  // Step 1: Claude generates mark prompt + SVG wordmark
-  let markPrompt;
   try {
-    const genRes = await fetch('/api/generate', {
+    const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        brandName: p.brandName,
-        brief: p.brief,
-        style: p.style,
-        variationHint: VARIATION_HINTS[i],
+        brandName:        p.brandName,
+        brief:            p.brief,
+        style:            p.style,
+        variationHint:    VARIATION_HINTS[i],
         moodboardAnalysis: p.moodboardAnalysis || null,
-        moodboardImages: (p.moodboardImages || []).map(img => ({ base64: img.base64, mediaType: img.mediaType })),
+        moodboardImages:  (p.moodboardImages || []).map(img => ({ base64: img.base64, mediaType: img.mediaType })),
       }),
     });
 
-    if (!genRes.ok) {
-      const err = await genRes.json().catch(() => ({}));
-      throw new Error(err.error || `Generation error ${genRes.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Generation error ${res.status}`);
     }
 
-    const genData = await genRes.json();
-    markPrompt = genData.markPrompt;
-
-    // Show wordmark immediately; mark area transitions to "Rendering…" state
-    gen.results[i] = { imageUrl: null, wordmarkSvg: genData.wordmarkSvg, tags: buildTags(p) };
+    const data = await res.json();
+    gen.results[i] = { svg: data.svg, tags: buildTags(p) };
     populateSlot(gen, i);
-
-    const markWrap = $(markWrapId);
-    if (markWrap && !markWrap.classList.contains('has-mark')) {
-      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Rendering…</div></div>';
-    }
-
     saveProjects();
 
   } catch (err) {
     setSlotError(gen.id, i, err.message || 'Generation failed');
-    const ww = $(wordmarkWrapId);
-    if (ww && !ww.classList.contains('has-wordmark')) ww.innerHTML = '';
-    return;
-  }
-
-  // Step 2: Replicate renders the mark image
-  let elapsed = 0;
-  const countdown = setInterval(() => {
-    elapsed++;
-    const label = $(markWrapId)?.querySelector('.loading-label');
-    if (label) label.textContent = `Rendering… ${elapsed}s`;
-  }, 1000);
-
-  const controller = new AbortController();
-  const killTimer  = setTimeout(() => controller.abort(), 30000);
-
-  try {
-    const repRes = await fetch('/api/replicate', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt: markPrompt }),
-      signal: controller.signal,
-    });
-    clearTimeout(killTimer);
-    clearInterval(countdown);
-
-    if (!repRes.ok) {
-      const err = await repRes.json().catch(() => ({}));
-      throw new Error(err.error || `Error ${repRes.status}`);
-    }
-
-    const repData = await repRes.json();
-    gen.results[i].imageUrl = repData.imageUrl;
-    populateSlot(gen, i);
-    saveProjects();
-
-  } catch (err) {
-    clearTimeout(killTimer);
-    clearInterval(countdown);
-    const msg = err.name === 'AbortError' ? 'Timed out after 30s' : (err.message || 'Generation failed');
-    setSlotError(gen.id, i, msg);
   }
 }
 
@@ -1355,10 +1176,10 @@ async function generateLogo(p, gen, i) {
 function buildTags(p) {
   if (!p.moodboardAnalysis) {
     const defaults = {
-      'wordmark': ['pure typography', 'brand as type'],
-      'monogram': ['letterform mark', 'initials'],
-      'letterform': ['custom letter', 'abstract form'],
-      'abstract': ['geometric mark', 'pure form'],
+      'wordmark':          ['pure typography', 'brand as type'],
+      'monogram':          ['letterform mark', 'initials'],
+      'letterform':        ['custom letter', 'abstract form'],
+      'abstract':          ['geometric mark', 'pure form'],
       'logomark-wordmark': ['mark + type', 'unified system'],
     };
     return defaults[p.style] || [];
@@ -1379,39 +1200,32 @@ function openLightbox(genId, slotIndex) {
   const r   = gen?.results[slotIndex];
   if (!r) return;
 
-  const lbMarkWrap = $('lb-mark-wrap');
-  lbMarkWrap.innerHTML = '';
-  const imageUrl = r.imageUrl || r.markImageUrl;
-  if (imageUrl) {
+  const lbWrap = $('lb-svg-wrap');
+  lbWrap.innerHTML = '';
+
+  const svgContent = r.svg || r.wordmarkSvg;
+  const imageUrl   = r.imageUrl || r.markImageUrl;
+
+  if (svgContent) {
+    lbWrap.innerHTML = svgContent;
+    const svgEl = lbWrap.querySelector('svg');
+    if (svgEl) { svgEl.style.width = '100%'; svgEl.style.height = 'auto'; svgEl.style.display = 'block'; }
+  } else if (imageUrl) {
     const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = '';
-    lbMarkWrap.appendChild(img);
+    img.src = imageUrl; img.alt = '';
+    lbWrap.appendChild(img);
   }
 
-  const lbWordmarkWrap = $('lb-wordmark-wrap');
-  lbWordmarkWrap.innerHTML = '';
-  lbWordmarkWrap.style.display = r.wordmarkSvg ? '' : 'none';
-  if (r.wordmarkSvg) {
-    lbWordmarkWrap.innerHTML = r.wordmarkSvg;
-    const svgEl = lbWordmarkWrap.querySelector('svg');
-    if (svgEl) {
-      svgEl.style.maxWidth = '100%';
-      svgEl.style.height = 'auto';
-      svgEl.style.display = 'block';
-    }
-  }
+  const hasSvg = !!svgContent;
+  $('lb-svg-btn').style.display = hasSvg ? '' : 'none';
 
-  const lbSvgBtn = $('lb-svg-btn');
-  if (lbSvgBtn) lbSvgBtn.style.display = r.wordmarkSvg ? '' : 'none';
-
-  const styleNames = { 'wordmark':'Wordmark','monogram':'Monogram','letterform':'Letterform','abstract':'Abstract','logomark-wordmark':'Logomark + Wordmark' };
-  const label = [
+  const styleNames = { wordmark:'Wordmark', monogram:'Monogram', letterform:'Letterform', abstract:'Abstract', 'logomark-wordmark':'Logomark + Wordmark' };
+  $('lb-meta-info').textContent = [
     p.brandName.toUpperCase(),
     styleNames[p.style] || p.style,
     `Option 0${slotIndex + 1}`,
-  ].filter(Boolean).join(' · ');
-  $('lb-meta-info').textContent = label;
+  ].join(' · ');
+
   lightbox.classList.remove('hidden');
 }
 
@@ -1422,26 +1236,28 @@ function closeLightbox() {
 }
 
 // ── EXPORT ─────────────────────────────────────────
-async function exportPNG(imageUrl, filename) {
-  const S = 1024;
+async function exportPNG(svgContent, filename) {
+  const W = 1200, H = 600;
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = S;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, S, S);
+  ctx.fillRect(0, 0, W, H);
+  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+  const url  = URL.createObjectURL(blob);
   await new Promise(resolve => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload  = () => { ctx.drawImage(img, 0, 0, S, S); resolve(); };
+    img.onload  = () => { ctx.drawImage(img, 0, 0, W, H); resolve(); };
     img.onerror = resolve;
-    img.src = imageUrl;
+    img.src = url;
   });
+  URL.revokeObjectURL(url);
   trigger(canvas.toDataURL('image/png'), filename);
 }
 
 function exportSVG(svgContent, filename) {
   const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
+  const url  = URL.createObjectURL(blob);
   trigger(url, filename);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -1454,11 +1270,11 @@ function trigger(href, filename) {
 // ── INIT ───────────────────────────────────────────
 function init() {
   initProjects();
-
   metaDate.textContent = fmtDate(new Date());
 
   brandInput.addEventListener('input', e => {
-    const p = getCurrentProject(); if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); }
+    const p = getCurrentProject();
+    if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); }
   });
   briefInput.addEventListener('input', e => {
     const p = getCurrentProject(); if (p) p.brief = e.target.value.trim();
@@ -1491,15 +1307,16 @@ function init() {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
-    const url = r?.imageUrl || r?.markImageUrl;
-    if (url) exportPNG(url, `${slug(p.brandName)}-mark-${state.lightboxSlot + 1}.png`);
+    const svgContent = r?.svg || r?.wordmarkSvg;
+    if (svgContent) exportPNG(svgContent, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.png`);
   });
 
   $('lb-svg-btn').addEventListener('click', () => {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
-    if (r?.wordmarkSvg) exportSVG(r.wordmarkSvg, `${slug(p.brandName)}-wordmark-${state.lightboxSlot + 1}.svg`);
+    const svgContent = r?.svg || r?.wordmarkSvg;
+    if (svgContent) exportSVG(svgContent, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.svg`);
   });
 
   $('new-project-btn').addEventListener('click', createProject);
