@@ -1262,7 +1262,10 @@ async function generate() {
       'You are generating VARIATION 3 — the unexpected interpretation: choose a different structural approach or typographic register entirely. Something that surprises but feels exactly right for this brand.',
     ];
 
-    await Promise.all(hints.map((h, i) => generateLogo(p, gen, i, h)));
+    for (let i = 0; i < hints.length; i++) {
+      await generateLogo(p, gen, i, hints[i]);
+      if (i < hints.length - 1) await wait(10000);
+    }
 
   } catch (err) {
     [0, 1, 2].forEach(i => {
@@ -1319,7 +1322,6 @@ async function generateLogo(p, gen, i, variationHint) {
 
   // Phase 2: Replicate generates mark image — staggered by slot index to avoid rate limits
   if (genData.markPrompt) {
-    if (i > 0) await wait(i * 5000);
     const markWrapId = `slot-mark-${gen.id}-${i}`;
     let elapsed = 0;
     const countdown = setInterval(() => {
