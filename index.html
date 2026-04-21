@@ -485,27 +485,6 @@
       display: block;
     }
 
-    .slot-wordmark-wrap {
-      background: #1a1a1a;
-      height: 110px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: default;
-      overflow: hidden;
-      position: relative;
-      flex-shrink: 0;
-    }
-
-    .slot-wordmark-wrap.has-logo { cursor: pointer; }
-    .slot-wordmark-wrap.has-logo:hover { background: #1e1e1e; }
-
-    .slot-wordmark-wrap svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
     .slot-loading-inner {
       width: 100%;
       height: 100%;
@@ -650,7 +629,6 @@
       background: #1a1a1a;
       width: 100%;
       aspect-ratio: 1 / 1;
-      max-height: 420px;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -661,23 +639,6 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      display: block;
-    }
-
-    #lb-wordmark-wrap {
-      background: #1a1a1a;
-      width: 100%;
-      height: 110px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    #lb-wordmark-wrap svg {
-      width: 100%;
-      height: 100%;
       display: block;
     }
 
@@ -798,9 +759,7 @@
       <button class="lb-close-btn" id="lb-close-btn">Close</button>
     </div>
     <div id="lb-mark-wrap"></div>
-    <div id="lb-wordmark-wrap"></div>
     <div class="lb-export-row">
-      <button class="lb-export-btn" id="lb-svg-btn">Export SVG</button>
       <button class="lb-export-btn" id="lb-png-btn">Export PNG</button>
     </div>
   </div>
@@ -1085,10 +1044,6 @@ function buildSlotEl(gen, i) {
   markWrap.className = 'slot-mark-wrap';
   markWrap.id = `slot-mark-${gen.id}-${i}`;
 
-  const wordmarkWrap = document.createElement('div');
-  wordmarkWrap.className = 'slot-wordmark-wrap';
-  wordmarkWrap.id = `slot-wordmark-${gen.id}-${i}`;
-
   const tagsEl = document.createElement('div');
   tagsEl.className = 'slot-tags';
   tagsEl.id = `tags-${gen.id}-${i}`;
@@ -1096,24 +1051,16 @@ function buildSlotEl(gen, i) {
   const exportsEl = document.createElement('div');
   exportsEl.className = 'slot-exports';
 
-  const btnSvg = document.createElement('button');
-  btnSvg.className = 'export-btn';
-  btnSvg.id = `export-svg-${gen.id}-${i}`;
-  btnSvg.textContent = 'SVG';
-  btnSvg.disabled = true;
-
   const btnPng = document.createElement('button');
   btnPng.className = 'export-btn';
   btnPng.id = `export-png-${gen.id}-${i}`;
   btnPng.textContent = 'PNG';
   btnPng.disabled = true;
 
-  exportsEl.appendChild(btnSvg);
   exportsEl.appendChild(btnPng);
 
   slot.appendChild(label);
   slot.appendChild(markWrap);
-  slot.appendChild(wordmarkWrap);
   slot.appendChild(tagsEl);
   slot.appendChild(exportsEl);
 
@@ -1121,26 +1068,19 @@ function buildSlotEl(gen, i) {
   const brandName = p ? p.brandName : 'sigil';
 
   markWrap.addEventListener('click', () => {
-    if (gen.results[i]?.markImageUrl || gen.results[i]?.wordmarkSvg) openLightbox(gen.id, i);
-  });
-  wordmarkWrap.addEventListener('click', () => {
-    if (gen.results[i]?.wordmarkSvg) openLightbox(gen.id, i);
-  });
-  btnSvg.addEventListener('click', () => {
     const r = gen.results[i];
-    const svg = r?.wordmarkSvg || r?.svg;
-    if (svg) exportSVG(svg, `${slug(brandName)}-wordmark-${i + 1}.svg`);
+    if (r?.imageUrl || r?.markImageUrl) openLightbox(gen.id, i);
   });
   btnPng.addEventListener('click', () => {
     const r = gen.results[i];
-    if (r) exportCombinedPNG(r.markImageUrl, r.wordmarkSvg || r.svg, `${slug(brandName)}-logo-${i + 1}.png`);
+    const url = r?.imageUrl || r?.markImageUrl;
+    if (url) exportPNG(url, `${slug(brandName)}-logo-${i + 1}.png`);
   });
 
   if (gen.results[i]) {
     populateSlot(gen, i);
   } else {
-    markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating mark…</div></div>';
-    wordmarkWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+    markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
   }
 
   return slot;
@@ -1150,47 +1090,25 @@ function populateSlot(gen, i) {
   const r = gen.results[i];
   if (!r) return;
 
-  // Backward compat: old saves used r.svg, new format uses r.wordmarkSvg
-  const wordmarkSvg = r.wordmarkSvg || r.svg;
+  // imageUrl = new format; markImageUrl = previous format (backward compat)
+  const imageUrl = r.imageUrl || r.markImageUrl;
 
-  // Populate wordmark SVG
-  const wordmarkWrap = $(`slot-wordmark-${gen.id}-${i}`);
-  if (wordmarkWrap) {
-    if (wordmarkSvg) {
-      wordmarkWrap.innerHTML = wordmarkSvg;
-      wordmarkWrap.classList.add('has-logo');
-      const svg = wordmarkWrap.querySelector('svg');
-      if (svg) {
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', '100%');
-        if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
-        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      }
-    } else {
-      wordmarkWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
-    }
-  }
-
-  // Populate mark image
   const markWrap = $(`slot-mark-${gen.id}-${i}`);
   if (markWrap) {
-    if (r.markImageUrl) {
+    if (imageUrl) {
       const img = document.createElement('img');
-      img.src = r.markImageUrl;
+      img.src = imageUrl;
       img.alt = '';
       markWrap.innerHTML = '';
       markWrap.appendChild(img);
       markWrap.classList.add('has-mark');
     } else {
-      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating mark…</div></div>';
+      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
     }
   }
 
-  // Enable export buttons as soon as wordmark is ready
-  const btnSvg = $(`export-svg-${gen.id}-${i}`);
   const btnPng = $(`export-png-${gen.id}-${i}`);
-  if (btnSvg) btnSvg.disabled = !wordmarkSvg;
-  if (btnPng) btnPng.disabled = !wordmarkSvg;
+  if (btnPng) btnPng.disabled = !imageUrl;
 
   const tagsEl = $(`tags-${gen.id}-${i}`);
   if (tagsEl && r.tags) tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
@@ -1198,11 +1116,9 @@ function populateSlot(gen, i) {
 
 function setSlotError(genId, i, msg) {
   const markWrap = $(`slot-mark-${genId}-${i}`);
-  const wordmarkWrap = $(`slot-wordmark-${genId}-${i}`);
-  if (markWrap) markWrap.innerHTML = '';
-  if (wordmarkWrap) {
-    wordmarkWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
-    wordmarkWrap.classList.remove('has-logo');
+  if (markWrap) {
+    markWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
+    markWrap.classList.remove('has-mark');
   }
 }
 
@@ -1256,15 +1172,9 @@ async function generate() {
       p.moodboardAnalysis = await analyzeMoodboard(p.moodboardImages);
     }
 
-    const hints = [
-      'You are generating VARIATION 1 — the expected interpretation: refined, considered, directly responsive to the brief. The most resolved version of the obvious approach.',
-      'You are generating VARIATION 2 — the bolder typographic move: push the tracking, scale, or weight contrast significantly further than feels safe. Make a stronger typographic statement.',
-      'You are generating VARIATION 3 — the unexpected interpretation: choose a different structural approach or typographic register entirely. Something that surprises but feels exactly right for this brand.',
-    ];
-
-    for (let i = 0; i < hints.length; i++) {
-      await generateLogo(p, gen, i, hints[i]);
-      if (i < hints.length - 1) await wait(10000);
+    for (let i = 0; i < 3; i++) {
+      await generateLogo(p, gen, i);
+      if (i < 2) await wait(10000);
     }
 
   } catch (err) {
@@ -1294,76 +1204,78 @@ async function analyzeMoodboard(images) {
   return data.analysis;
 }
 
-// ── API: LOGO GENERATION ───────────────────────────
-async function generateLogo(p, gen, i, variationHint) {
-  // Phase 1: Claude generates mark prompt + wordmark SVG
-  const genRes = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      brandName: p.brandName,
-      brief: p.brief,
-      style: p.style,
-      variationHint,
-      moodboardAnalysis: p.moodboardAnalysis || null,
-      moodboardImages: p.moodboardImages.map(img => ({ base64: img.base64, mediaType: img.mediaType })),
-    }),
-  });
-  if (!genRes.ok) {
-    const err = await genRes.json().catch(() => ({}));
-    throw new Error(err.error || `Generation failed (${genRes.status})`);
+// ── REPLICATE PROMPT BUILDER ───────────────────────
+function buildReplicatePrompt(p, variationIndex) {
+  const variationStyles = [
+    'refined minimal composition, elegant and considered, clean professional execution',
+    'bold assertive composition, high visual impact, strong graphic weight',
+    'distinctive unexpected composition, unique and original, memorable and confident',
+  ];
+
+  const styleParts = [];
+  if (p.brief) styleParts.push(p.brief.slice(0, 120));
+  if (p.moodboardAnalysis) {
+    const tags = p.moodboardAnalysis.split('|')
+      .map(s => s.split(':').slice(1).join(':').trim())
+      .filter(Boolean);
+    if (tags.length) styleParts.push(tags.join(', '));
   }
-  const genData = await genRes.json();
+  styleParts.push(variationStyles[variationIndex] || variationStyles[0]);
 
-  // Show wordmark immediately while Replicate runs
-  gen.results[i] = { wordmarkSvg: genData.wordmarkSvg, markImageUrl: null, tags: buildTags(p) };
-  populateSlot(gen, i);
-  saveProjects();
+  return [
+    'logo design',
+    'brand identity mark',
+    p.brandName,
+    'complete logo with both symbol/mark and typographic wordmark',
+    'flat graphic design',
+    'black on pure white background',
+    'professional logo design',
+    'the mark and type should feel like one unified system',
+    styleParts.join(', '),
+    'no gradients',
+    'no shadows',
+    'no background color',
+    'print ready',
+    'isolated on white',
+  ].join(', ');
+}
 
-  // Phase 2: Replicate generates mark image — staggered by slot index to avoid rate limits
-  if (genData.markPrompt) {
-    const markWrapId = `slot-mark-${gen.id}-${i}`;
-    let elapsed = 0;
-    const countdown = setInterval(() => {
-      elapsed++;
-      const label = $(markWrapId)?.querySelector('.loading-label');
-      if (label) label.textContent = `Generating mark… ${elapsed}s`;
-    }, 1000);
+// ── API: LOGO GENERATION ───────────────────────────
+async function generateLogo(p, gen, i) {
+  const markWrapId = `slot-mark-${gen.id}-${i}`;
+  let elapsed = 0;
+  const countdown = setInterval(() => {
+    elapsed++;
+    const label = $(markWrapId)?.querySelector('.loading-label');
+    if (label) label.textContent = `Generating… ${elapsed}s`;
+  }, 1000);
 
-    const controller = new AbortController();
-    const killTimer  = setTimeout(() => controller.abort(), 30000);
+  const controller = new AbortController();
+  const killTimer  = setTimeout(() => controller.abort(), 30000);
 
-    try {
-      const repRes = await fetch('/api/replicate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ prompt: genData.markPrompt }),
-        signal: controller.signal,
-      });
-      clearTimeout(killTimer);
-      clearInterval(countdown);
+  try {
+    const repRes = await fetch('/api/replicate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: buildReplicatePrompt(p, i) }),
+      signal: controller.signal,
+    });
+    clearTimeout(killTimer);
+    clearInterval(countdown);
 
-      if (repRes.ok) {
-        const repData = await repRes.json();
-        if (repData.imageUrl) {
-          gen.results[i].markImageUrl = repData.imageUrl;
-          gen.results[i].markPrompt   = genData.markPrompt;
-          populateSlot(gen, i);
-        }
-      } else {
-        const err = await repRes.json().catch(() => ({}));
-        const mw = $(markWrapId);
-        if (mw) mw.innerHTML = `<div class="slot-error">[ Mark failed ]<br><br>${escHtml(err.error || `Error ${repRes.status}`)}</div>`;
-      }
-    } catch (err) {
-      clearTimeout(killTimer);
-      clearInterval(countdown);
-      const mw = $(markWrapId);
-      if (mw) {
-        const msg = err.name === 'AbortError' ? 'Timed out after 30s' : (err.message || 'Mark generation failed');
-        mw.innerHTML = `<div class="slot-error">[ Mark failed ]<br><br>${escHtml(msg)}</div>`;
-      }
+    if (!repRes.ok) {
+      const err = await repRes.json().catch(() => ({}));
+      throw new Error(err.error || `Error ${repRes.status}`);
     }
+    const repData = await repRes.json();
+    gen.results[i] = { imageUrl: repData.imageUrl, tags: buildTags(p) };
+    populateSlot(gen, i);
+
+  } catch (err) {
+    clearTimeout(killTimer);
+    clearInterval(countdown);
+    const msg = err.name === 'AbortError' ? 'Timed out after 30s' : (err.message || 'Generation failed');
+    setSlotError(gen.id, i, msg);
   }
 }
 
@@ -1396,27 +1308,14 @@ function openLightbox(genId, slotIndex) {
   const r   = gen?.results[slotIndex];
   if (!r) return;
 
-  const lbMarkWrap     = $('lb-mark-wrap');
-  const lbWordmarkWrap = $('lb-wordmark-wrap');
-
-  // Mark image
+  const lbMarkWrap = $('lb-mark-wrap');
   lbMarkWrap.innerHTML = '';
-  if (r.markImageUrl) {
+  const imageUrl = r.imageUrl || r.markImageUrl;
+  if (imageUrl) {
     const img = document.createElement('img');
-    img.src = r.markImageUrl;
+    img.src = imageUrl;
     img.alt = '';
     lbMarkWrap.appendChild(img);
-  }
-
-  // Wordmark SVG (backward compat: old saves used r.svg)
-  const wordmarkSvg = r.wordmarkSvg || r.svg;
-  lbWordmarkWrap.innerHTML = wordmarkSvg || '';
-  const svg = lbWordmarkWrap.querySelector('svg');
-  if (svg) {
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', '100%');
-    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   }
 
   const styleNames = { 'wordmark':'Wordmark','monogram':'Monogram','letterform':'Letterform','abstract':'Abstract','logomark-wordmark':'Logomark + Wordmark' };
@@ -1436,44 +1335,20 @@ function closeLightbox() {
 }
 
 // ── EXPORT ─────────────────────────────────────────
-function exportSVG(svgStr, filename) {
-  const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml' }));
-  trigger(url, filename);
-  URL.revokeObjectURL(url);
-}
-
-async function exportCombinedPNG(markImageUrl, wordmarkSvg, filename) {
-  const W = 800;
-  const MARK_H = 800;
-  const WORDMARK_H = 200;
+async function exportPNG(imageUrl, filename) {
+  const S = 1024;
   const canvas = document.createElement('canvas');
-  canvas.width  = W;
-  canvas.height = MARK_H + WORDMARK_H;
+  canvas.width = canvas.height = S;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  if (markImageUrl) {
-    await new Promise(resolve => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload  = () => { ctx.drawImage(img, 0, 0, W, MARK_H); resolve(); };
-      img.onerror = resolve;
-      img.src = markImageUrl;
-    });
-  }
-
-  if (wordmarkSvg) {
-    await new Promise(resolve => {
-      const blob = new Blob([wordmarkSvg], { type: 'image/svg+xml' });
-      const url  = URL.createObjectURL(blob);
-      const img  = new Image();
-      img.onload  = () => { ctx.drawImage(img, 0, MARK_H, W, WORDMARK_H); URL.revokeObjectURL(url); resolve(); };
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-      img.src = url;
-    });
-  }
-
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, S, S);
+  await new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => { ctx.drawImage(img, 0, 0, S, S); resolve(); };
+    img.onerror = resolve;
+    img.src = imageUrl;
+  });
   trigger(canvas.toDataURL('image/png'), filename);
 }
 
@@ -1521,18 +1396,12 @@ function init() {
   // Lightbox
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   $('lb-close-btn').addEventListener('click', closeLightbox);
-  $('lb-svg-btn').addEventListener('click', () => {
-    const p   = getCurrentProject();
-    const gen = p?.generations.find(g => g.id === state.lightboxGenId);
-    const r   = gen?.results[state.lightboxSlot];
-    const svg = r?.wordmarkSvg || r?.svg;
-    if (svg) exportSVG(svg, `${slug(p.brandName)}-wordmark-${state.lightboxSlot + 1}.svg`);
-  });
   $('lb-png-btn').addEventListener('click', () => {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
-    if (r) exportCombinedPNG(r.markImageUrl, r.wordmarkSvg || r.svg, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.png`);
+    const url = r?.imageUrl || r?.markImageUrl;
+    if (url) exportPNG(url, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.png`);
   });
 
   // Projects bar
