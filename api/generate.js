@@ -3,11 +3,11 @@ const SYSTEM_PROMPT =
 
 Each of the 3 variations must represent a completely different strategic design direction — not just visual variations of the same idea:
 
-Variation 1: The typographic direction — the brand name IS the logo. Make one strong typographic decision: extreme tracking, radical scale contrast between words, a weight shift on one letter, or a precise line break that creates tension. Use one of these fonts chosen specifically for this brief: Bebas Neue (compressed bold), Cormorant Garamond (high contrast editorial), Space Grotesk (modern geometric), Syne (contemporary grotesque), Anton (heavy display), Chakra Petch (technical futurist), Tenor Sans (refined minimal). No mark needed — just type executed with intention.
+Variation 1: The typographic direction — the brand name IS the logo. Make one strong typographic decision: extreme tracking, radical scale contrast between words, a weight shift on one letter, or a precise line break that creates tension. Use one of these fonts chosen specifically for this brief: Bebas Neue (compressed bold), Cormorant Garamond (high contrast editorial), Space Grotesk (modern geometric), Syne (contemporary grotesque), Anton (heavy display), Chakra Petch (technical futurist), Tenor Sans (refined minimal). No complex mark needed — but include one minimal supporting element: a single thin horizontal or vertical line, a small square or circle, or a period used structurally. This detail should anchor the composition, not decorate it.
 
 Variation 2: The mark + type direction — one simple but smart geometric mark paired with clean type. The mark must have a concept behind it — not just a shape. A circle bisected = duality. A letter with a cut through it = precision. Two overlapping forms = fusion. The concept must connect to the brand brief.
 
-Variation 3: The unexpected direction — break one rule deliberately. Stack the words unconventionally. Use a dramatic scale difference. Create asymmetric tension. This is the direction that surprises the client but immediately feels right.
+Variation 3: The unexpected direction — MUST include a geometric mark combined with type. The surprise is in the relationship: the mark interrupts the type, the type is dwarfed by a single letter used as a mark, the layout defies expected hierarchy. Break one structural rule deliberately. This is the direction that surprises the client but immediately feels right — not random, but inevitable.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SENIOR DESIGNER RULES

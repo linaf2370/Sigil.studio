@@ -1274,13 +1274,13 @@ function init() {
 
   brandInput.addEventListener('input', e => {
     const p = getCurrentProject();
-    if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); }
+    if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); saveProjects(); }
   });
   briefInput.addEventListener('input', e => {
-    const p = getCurrentProject(); if (p) p.brief = e.target.value.trim();
+    const p = getCurrentProject(); if (p) { p.brief = e.target.value.trim(); saveProjects(); }
   });
   document.querySelectorAll('input[name="style"]').forEach(r =>
-    r.addEventListener('change', e => { const p = getCurrentProject(); if (p) p.style = e.target.value; })
+    r.addEventListener('change', e => { const p = getCurrentProject(); if (p) { p.style = e.target.value; saveProjects(); } })
   );
   generateBtn.addEventListener('click', generate);
 
