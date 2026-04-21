@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         input: {
           prompt,
-          style: 'vector_illustration',
+          style: 'digital_illustration',
           width: 1024,
           height: 1024,
         },
