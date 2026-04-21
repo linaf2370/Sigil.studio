@@ -3,7 +3,7 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt } = req.body || {};
+  const { prompt, negativePrompt } = req.body || {};
   if (!prompt) {
     return res.status(400).json({ error: 'Missing required field: prompt' });
   }
@@ -14,8 +14,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Create prediction
-    const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions', {
+    const createRes = await fetch('https://api.replicate.com/v1/models/recraft-ai/recraft-v3/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${token}`,
@@ -24,9 +23,10 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         input: {
           prompt,
-          aspect_ratio: '1:1',
-          output_format: 'png',
-          output_quality: 90,
+          negative_prompt: negativePrompt || '',
+          style: 'vector_illustration',
+          width: 1024,
+          height: 1024,
         },
       }),
     });

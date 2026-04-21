@@ -6,7 +6,7 @@
   <title>SIGIL</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500&family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -429,10 +429,6 @@
       opacity: 0.4;
     }
 
-    .generation-block.stale .slot-svg-wrap.has-logo {
-      cursor: pointer;
-    }
-
     .generation-header {
       font-size: 9px;
       letter-spacing: 0.22em;
@@ -483,6 +479,22 @@
       height: 100%;
       object-fit: contain;
       display: block;
+    }
+
+    .slot-wordmark-wrap {
+      background: #111111;
+      border-top: 0.5px solid rgba(255,255,255,0.04);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+    }
+
+    .slot-wordmark-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
     }
 
     .slot-loading-inner {
@@ -590,7 +602,7 @@
     .lightbox-inner {
       display: flex;
       flex-direction: column;
-      width: min(860px, 88vw);
+      width: min(700px, 88vw);
     }
 
     .lb-meta {
@@ -629,6 +641,7 @@
       background: #1a1a1a;
       width: 100%;
       aspect-ratio: 1 / 1;
+      max-height: 500px;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -639,6 +652,22 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
+    }
+
+    #lb-wordmark-wrap {
+      background: #111111;
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+    }
+
+    #lb-wordmark-wrap svg {
+      max-width: 100%;
+      height: auto;
       display: block;
     }
 
@@ -759,8 +788,10 @@
       <button class="lb-close-btn" id="lb-close-btn">Close</button>
     </div>
     <div id="lb-mark-wrap"></div>
+    <div id="lb-wordmark-wrap"></div>
     <div class="lb-export-row">
-      <button class="lb-export-btn" id="lb-png-btn">Export PNG</button>
+      <button class="lb-export-btn" id="lb-png-btn">Export Mark PNG</button>
+      <button class="lb-export-btn" id="lb-svg-btn">Export Wordmark SVG</button>
     </div>
   </div>
 </div>
@@ -829,7 +860,6 @@ function saveProjects() {
     localStorage.setItem('sigil_projects', JSON.stringify(state.projects));
     localStorage.setItem('sigil_current_project', state.currentProjectId);
   } catch {
-    // Try without moodboard images if quota exceeded
     try {
       const slim = state.projects.map(p => ({ ...p, moodboardImages: [] }));
       localStorage.setItem('sigil_projects', JSON.stringify(slim));
@@ -896,12 +926,10 @@ function loadProjectIntoUI(p) {
   briefInput.value = p.brief;
   const radio = document.querySelector(`input[name="style"][value="${p.style}"]`);
   if (radio) radio.checked = true;
-  // Moodboard
   const imgs = p.moodboardImages || [];
   moodboardPrompt.style.display = imgs.length ? 'none' : 'block';
   moodboardThumbs.style.display = imgs.length ? 'flex' : 'none';
   renderMoodboardThumbs(imgs);
-  // Canvas
   metaBrand.textContent = p.brandName ? p.brandName.toUpperCase() : '—';
   metaDate.textContent = fmtDate(new Date());
   metaCount.textContent = p.generations.length ? `${p.generations.length} Generation${p.generations.length > 1 ? 's' : ''}` : '—';
@@ -1044,6 +1072,10 @@ function buildSlotEl(gen, i) {
   markWrap.className = 'slot-mark-wrap';
   markWrap.id = `slot-mark-${gen.id}-${i}`;
 
+  const wordmarkWrap = document.createElement('div');
+  wordmarkWrap.className = 'slot-wordmark-wrap';
+  wordmarkWrap.id = `slot-wordmark-${gen.id}-${i}`;
+
   const tagsEl = document.createElement('div');
   tagsEl.className = 'slot-tags';
   tagsEl.id = `tags-${gen.id}-${i}`;
@@ -1057,10 +1089,18 @@ function buildSlotEl(gen, i) {
   btnPng.textContent = 'PNG';
   btnPng.disabled = true;
 
+  const btnSvg = document.createElement('button');
+  btnSvg.className = 'export-btn';
+  btnSvg.id = `export-svg-${gen.id}-${i}`;
+  btnSvg.textContent = 'SVG';
+  btnSvg.disabled = true;
+
   exportsEl.appendChild(btnPng);
+  exportsEl.appendChild(btnSvg);
 
   slot.appendChild(label);
   slot.appendChild(markWrap);
+  slot.appendChild(wordmarkWrap);
   slot.appendChild(tagsEl);
   slot.appendChild(exportsEl);
 
@@ -1071,16 +1111,23 @@ function buildSlotEl(gen, i) {
     const r = gen.results[i];
     if (r?.imageUrl || r?.markImageUrl) openLightbox(gen.id, i);
   });
+
   btnPng.addEventListener('click', () => {
     const r = gen.results[i];
     const url = r?.imageUrl || r?.markImageUrl;
-    if (url) exportPNG(url, `${slug(brandName)}-logo-${i + 1}.png`);
+    if (url) exportPNG(url, `${slug(brandName)}-mark-${i + 1}.png`);
+  });
+
+  btnSvg.addEventListener('click', () => {
+    const r = gen.results[i];
+    if (r?.wordmarkSvg) exportSVG(r.wordmarkSvg, `${slug(brandName)}-wordmark-${i + 1}.svg`);
   });
 
   if (gen.results[i]) {
     populateSlot(gen, i);
   } else {
     markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+    wordmarkWrap.innerHTML = '<div style="padding:16px;display:flex;align-items:center;justify-content:center;width:100%;"><div class="loading-label">Wordmark…</div></div>';
   }
 
   return slot;
@@ -1090,28 +1137,41 @@ function populateSlot(gen, i) {
   const r = gen.results[i];
   if (!r) return;
 
-  // imageUrl = new format; markImageUrl = previous format (backward compat)
   const imageUrl = r.imageUrl || r.markImageUrl;
+  const wordmarkSvg = r.wordmarkSvg;
 
   const markWrap = $(`slot-mark-${gen.id}-${i}`);
-  if (markWrap) {
-    if (imageUrl) {
-      const img = document.createElement('img');
-      img.src = imageUrl;
-      img.alt = '';
-      markWrap.innerHTML = '';
-      markWrap.appendChild(img);
-      markWrap.classList.add('has-mark');
-    } else {
-      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+  if (markWrap && imageUrl) {
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = '';
+    markWrap.innerHTML = '';
+    markWrap.appendChild(img);
+    markWrap.classList.add('has-mark');
+  }
+
+  const wordmarkWrap = $(`slot-wordmark-${gen.id}-${i}`);
+  if (wordmarkWrap && wordmarkSvg && !wordmarkWrap.classList.contains('has-wordmark')) {
+    wordmarkWrap.innerHTML = wordmarkSvg;
+    const svgEl = wordmarkWrap.querySelector('svg');
+    if (svgEl) {
+      svgEl.style.width = '100%';
+      svgEl.style.height = 'auto';
+      svgEl.style.display = 'block';
     }
+    wordmarkWrap.classList.add('has-wordmark');
   }
 
   const btnPng = $(`export-png-${gen.id}-${i}`);
   if (btnPng) btnPng.disabled = !imageUrl;
 
+  const btnSvg = $(`export-svg-${gen.id}-${i}`);
+  if (btnSvg) btnSvg.disabled = !wordmarkSvg;
+
   const tagsEl = $(`tags-${gen.id}-${i}`);
-  if (tagsEl && r.tags) tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+  if (tagsEl && r.tags && !tagsEl.children.length) {
+    tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+  }
 }
 
 function setSlotError(genId, i, msg) {
@@ -1140,7 +1200,6 @@ async function generate() {
   p.style     = document.querySelector('input[name="style"]:checked')?.value || 'wordmark';
   p.moodboardAnalysis = null;
 
-  // Create new generation
   const now = new Date();
   const gen = {
     id: uid(),
@@ -1150,21 +1209,17 @@ async function generate() {
   };
   p.generations.unshift(gen);
 
-  // Update meta bar
   metaBrand.textContent = brand.toUpperCase();
   metaDate.textContent  = fmtDate(now);
   metaCount.textContent = `${p.generations.length} Generation${p.generations.length > 1 ? 's' : ''}`;
 
-  // Mark previous generation stale
   const firstBlock = canvasHistory.firstElementChild;
   if (firstBlock) firstBlock.classList.add('stale');
 
-  // Prepend new generation block
   const block = buildGenerationBlock(gen, true);
   canvasHistory.insertBefore(block, canvasHistory.firstChild);
   canvasHistory.scrollTop = 0;
 
-  // Update tab name
   renderProjectsBar();
 
   try {
@@ -1204,50 +1259,65 @@ async function analyzeMoodboard(images) {
   return data.analysis;
 }
 
-// ── REPLICATE PROMPT BUILDER ───────────────────────
-function buildReplicatePrompt(p, variationIndex) {
-  const variationStyles = [
-    'refined minimal composition, elegant and considered, clean professional execution',
-    'bold assertive composition, high visual impact, strong graphic weight',
-    'distinctive unexpected composition, unique and original, memorable and confident',
-  ];
-
-  const styleParts = [];
-  if (p.brief) styleParts.push(p.brief.slice(0, 120));
-  if (p.moodboardAnalysis) {
-    const tags = p.moodboardAnalysis.split('|')
-      .map(s => s.split(':').slice(1).join(':').trim())
-      .filter(Boolean);
-    if (tags.length) styleParts.push(tags.join(', '));
-  }
-  styleParts.push(variationStyles[variationIndex] || variationStyles[0]);
-
-  return [
-    'logo design',
-    'brand identity mark',
-    p.brandName,
-    'complete logo with both symbol/mark and typographic wordmark',
-    'flat graphic design',
-    'black on pure white background',
-    'professional logo design',
-    'the mark and type should feel like one unified system',
-    styleParts.join(', '),
-    'no gradients',
-    'no shadows',
-    'no background color',
-    'print ready',
-    'isolated on white',
-  ].join(', ');
-}
-
 // ── API: LOGO GENERATION ───────────────────────────
+const VARIATION_HINTS = [
+  'Variation 1: Expected typographic interpretation — refined, considered, directly responsive to the brief',
+  'Variation 2: Bolder typographic move — push tracking, scale contrast, or weight further than feels safe',
+  'Variation 3: Unexpected typographic register — different structural approach, different scale relationship, something that surprises but feels exactly right',
+];
+
 async function generateLogo(p, gen, i) {
-  const markWrapId = `slot-mark-${gen.id}-${i}`;
+  const markWrapId     = `slot-mark-${gen.id}-${i}`;
+  const wordmarkWrapId = `slot-wordmark-${gen.id}-${i}`;
+
+  // Step 1: Claude generates mark prompt + SVG wordmark
+  let markPrompt;
+  try {
+    const genRes = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        brandName: p.brandName,
+        brief: p.brief,
+        style: p.style,
+        variationHint: VARIATION_HINTS[i],
+        moodboardAnalysis: p.moodboardAnalysis || null,
+        moodboardImages: (p.moodboardImages || []).map(img => ({ base64: img.base64, mediaType: img.mediaType })),
+      }),
+    });
+
+    if (!genRes.ok) {
+      const err = await genRes.json().catch(() => ({}));
+      throw new Error(err.error || `Generation error ${genRes.status}`);
+    }
+
+    const genData = await genRes.json();
+    markPrompt = genData.markPrompt;
+
+    // Show wordmark immediately; mark area transitions to "Rendering…" state
+    gen.results[i] = { imageUrl: null, wordmarkSvg: genData.wordmarkSvg, tags: buildTags(p) };
+    populateSlot(gen, i);
+
+    const markWrap = $(markWrapId);
+    if (markWrap && !markWrap.classList.contains('has-mark')) {
+      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Rendering…</div></div>';
+    }
+
+    saveProjects();
+
+  } catch (err) {
+    setSlotError(gen.id, i, err.message || 'Generation failed');
+    const ww = $(wordmarkWrapId);
+    if (ww && !ww.classList.contains('has-wordmark')) ww.innerHTML = '';
+    return;
+  }
+
+  // Step 2: Replicate renders the mark image
   let elapsed = 0;
   const countdown = setInterval(() => {
     elapsed++;
     const label = $(markWrapId)?.querySelector('.loading-label');
-    if (label) label.textContent = `Generating… ${elapsed}s`;
+    if (label) label.textContent = `Rendering… ${elapsed}s`;
   }, 1000);
 
   const controller = new AbortController();
@@ -1257,7 +1327,10 @@ async function generateLogo(p, gen, i) {
     const repRes = await fetch('/api/replicate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt: buildReplicatePrompt(p, i) }),
+      body: JSON.stringify({
+        prompt: markPrompt,
+        negativePrompt: 'text, letters, words, typography, font, numbers, watermark, signature, label',
+      }),
       signal: controller.signal,
     });
     clearTimeout(killTimer);
@@ -1267,9 +1340,11 @@ async function generateLogo(p, gen, i) {
       const err = await repRes.json().catch(() => ({}));
       throw new Error(err.error || `Error ${repRes.status}`);
     }
+
     const repData = await repRes.json();
-    gen.results[i] = { imageUrl: repData.imageUrl, tags: buildTags(p) };
+    gen.results[i].imageUrl = repData.imageUrl;
     populateSlot(gen, i);
+    saveProjects();
 
   } catch (err) {
     clearTimeout(killTimer);
@@ -1278,7 +1353,6 @@ async function generateLogo(p, gen, i) {
     setSlotError(gen.id, i, msg);
   }
 }
-
 
 // ── TAGS ───────────────────────────────────────────
 function buildTags(p) {
@@ -1318,6 +1392,22 @@ function openLightbox(genId, slotIndex) {
     lbMarkWrap.appendChild(img);
   }
 
+  const lbWordmarkWrap = $('lb-wordmark-wrap');
+  lbWordmarkWrap.innerHTML = '';
+  lbWordmarkWrap.style.display = r.wordmarkSvg ? '' : 'none';
+  if (r.wordmarkSvg) {
+    lbWordmarkWrap.innerHTML = r.wordmarkSvg;
+    const svgEl = lbWordmarkWrap.querySelector('svg');
+    if (svgEl) {
+      svgEl.style.maxWidth = '100%';
+      svgEl.style.height = 'auto';
+      svgEl.style.display = 'block';
+    }
+  }
+
+  const lbSvgBtn = $('lb-svg-btn');
+  if (lbSvgBtn) lbSvgBtn.style.display = r.wordmarkSvg ? '' : 'none';
+
   const styleNames = { 'wordmark':'Wordmark','monogram':'Monogram','letterform':'Letterform','abstract':'Abstract','logomark-wordmark':'Logomark + Wordmark' };
   const label = [
     p.brandName.toUpperCase(),
@@ -1352,6 +1442,13 @@ async function exportPNG(imageUrl, filename) {
   trigger(canvas.toDataURL('image/png'), filename);
 }
 
+function exportSVG(svgContent, filename) {
+  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  trigger(url, filename);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function trigger(href, filename) {
   const a = document.createElement('a');
   a.href = href; a.download = filename; a.click();
@@ -1363,7 +1460,6 @@ function init() {
 
   metaDate.textContent = fmtDate(new Date());
 
-  // Sidebar inputs → sync to current project
   brandInput.addEventListener('input', e => {
     const p = getCurrentProject(); if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); }
   });
@@ -1375,14 +1471,12 @@ function init() {
   );
   generateBtn.addEventListener('click', generate);
 
-  // Moodboard
   moodboardZone.addEventListener('click',     () => moodboardFile.click());
   moodboardZone.addEventListener('dragover',  e => { e.preventDefault(); moodboardZone.classList.add('drag-over'); });
   moodboardZone.addEventListener('dragleave', () => moodboardZone.classList.remove('drag-over'));
   moodboardZone.addEventListener('drop',      e => { e.preventDefault(); moodboardZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
   moodboardFile.addEventListener('change',    e => { handleFiles(e.target.files); moodboardFile.value = ''; });
 
-  // Clear history
   clearHistoryBtn.addEventListener('click', () => {
     const p = getCurrentProject();
     if (!p || !p.generations.length) return;
@@ -1393,22 +1487,27 @@ function init() {
     saveProjects();
   });
 
-  // Lightbox
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   $('lb-close-btn').addEventListener('click', closeLightbox);
+
   $('lb-png-btn').addEventListener('click', () => {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
     const url = r?.imageUrl || r?.markImageUrl;
-    if (url) exportPNG(url, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.png`);
+    if (url) exportPNG(url, `${slug(p.brandName)}-mark-${state.lightboxSlot + 1}.png`);
   });
 
-  // Projects bar
+  $('lb-svg-btn').addEventListener('click', () => {
+    const p   = getCurrentProject();
+    const gen = p?.generations.find(g => g.id === state.lightboxGenId);
+    const r   = gen?.results[state.lightboxSlot];
+    if (r?.wordmarkSvg) exportSVG(r.wordmarkSvg, `${slug(p.brandName)}-wordmark-${state.lightboxSlot + 1}.svg`);
+  });
+
   $('new-project-btn').addEventListener('click', createProject);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-  // Render initial state
   renderProjectsBar();
   loadProjectIntoUI(getCurrentProject());
 }
