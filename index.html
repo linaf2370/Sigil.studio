@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGIL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0e0e0e;
+      --surface:    #141414;
+      --border:     #242424;
+      --text:       #e8e4dc;
+      --muted:      #6b6660;
+      --accent:     #c4614a;
+      --accent-dim: #9e4d3b;
+      --rule:       #1e1e1e;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-ui:    'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── PROJECTS BAR ─────────────────────────────── */
+    #projects-bar {
+      display: flex;
+      align-items: stretch;
+      height: 36px;
+      background: #0a0a0a;
+      border-bottom: 0.5px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    #projects-tabs {
+      display: flex;
+      overflow-x: auto;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    #projects-tabs::-webkit-scrollbar { display: none; }
+
+    .project-tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      border-right: 0.5px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      white-space: nowrap;
+      position: relative;
+      transition: background 0.1s;
+      flex-shrink: 0;
+      min-width: 0;
+      user-select: none;
+    }
+
+    .project-tab:hover { background: rgba(255,255,255,0.02); }
+
+    .project-tab.active { background: rgba(255,255,255,0.03); }
+
+    .project-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: var(--accent);
+    }
+
+    .tab-name {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.1s;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .project-tab.active .tab-name { color: var(--text); }
+
+    .tab-close {
+      background: none;
+      border: none;
+      color: #2e2c2a;
+      font-size: 9px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.1s;
+      font-family: var(--font-ui);
+    }
+
+    .tab-close:hover { color: var(--muted); }
+
+    #new-project-btn {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      background: transparent;
+      border: none;
+      border-left: 0.5px solid rgba(255,255,255,0.06);
+      color: #3a3835;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.1s;
+    }
+
+    #new-project-btn:hover { color: var(--muted); }
+    #new-project-btn::before { content: '[ '; }
+    #new-project-btn::after  { content: ' ]'; }
+
+    /* ── APP GRID ─────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ──────────────────────────────────── */
+    #sidebar {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar::-webkit-scrollbar { width: 3px; }
+    #sidebar::-webkit-scrollbar-track { background: transparent; }
+    #sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .sidebar-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 28px 28px 22px;
+      flex-shrink: 0;
+    }
+
+    .logotype {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: 21px;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .version {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .sidebar-section {
+      padding: 18px 28px;
+      border-top: 1px solid var(--rule);
+      flex-shrink: 0;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 400;
+      margin-bottom: 10px;
+    }
+
+    .field-label::before { content: '[ '; }
+    .field-label::after  { content: ' ]'; }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 300;
+      letter-spacing: 0.03em;
+      padding: 8px 0;
+      outline: none;
+      resize: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    textarea:focus { border-bottom-color: var(--muted); }
+
+    input::placeholder,
+    textarea::placeholder { color: #3a3734; font-weight: 300; }
+
+    textarea { height: 78px; line-height: 1.6; }
+
+    /* ── STYLE PICKER ─────────────────────────────── */
+    .style-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .style-option:last-child { grid-column: 1 / -1; }
+
+    .style-option input[type="radio"] { display: none; }
+
+    .style-option label {
+      display: block;
+      padding: 9px 12px;
+      font-size: 10px;
+      letter-spacing: 0.17em;
+      text-transform: uppercase;
+      font-weight: 400;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-left: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.1s, background 0.1s, border-left-color 0.1s;
+      user-select: none;
+    }
+
+    .style-option label:hover { color: var(--text); }
+
+    .style-option input[type="radio"]:checked + label {
+      color: var(--text);
+      border-left-color: var(--accent);
+      background: var(--surface);
+    }
+
+    /* ── MOODBOARD ────────────────────────────────── */
+    #moodboard-zone {
+      border: 1px dashed var(--border);
+      min-height: 72px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    #moodboard-zone:hover { border-color: var(--muted); }
+
+    #moodboard-zone.drag-over {
+      border-color: var(--muted);
+      background: var(--surface);
+    }
+
+    .moodboard-prompt {
+      text-align: center;
+      color: #3a3734;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 6px 0;
+      pointer-events: none;
+    }
+
+    .moodboard-thumbs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .thumb-item {
+      position: relative;
+      width: 74px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .thumb-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(14,14,14,0.8);
+      color: var(--text);
+      border: none;
+      width: 16px;
+      height: 16px;
+      font-size: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.1s;
+    }
+
+    .thumb-remove:hover { background: rgba(14,14,14,1); }
+
+    #moodboard-file-input { display: none; }
+
+    /* ── GENERATE BUTTON ──────────────────────────── */
+    .generate-wrap {
+      padding: 18px 28px 24px;
+      border-top: 1px solid var(--rule);
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      margin-top: auto;
+    }
+
+    #generate-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    #generate-btn:hover:not(:disabled) { background: var(--accent-dim); }
+
+    #generate-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* ── CANVAS ───────────────────────────────────── */
+    #canvas {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+      background: var(--bg);
+    }
+
+    .canvas-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 32px;
+      border-bottom: 0.5px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      gap: 20px;
+    }
+
+    .canvas-meta span {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    #meta-brand { flex: 1; }
+
+    #clear-history-btn {
+      background: transparent;
+      border: none;
+      color: #302e2c;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.1s;
+      flex-shrink: 0;
+    }
+
+    #clear-history-btn:hover { color: var(--muted); }
+    #clear-history-btn::before { content: '[ '; }
+    #clear-history-btn::after  { content: ' ]'; }
+
+    /* ── CANVAS HISTORY ───────────────────────────── */
+    #canvas-history {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    #canvas-history::-webkit-scrollbar { width: 3px; }
+    #canvas-history::-webkit-scrollbar-track { background: transparent; }
+    #canvas-history::-webkit-scrollbar-thumb { background: #2a2a2a; }
+
+    .generation-block {
+      padding: 28px;
+    }
+
+    .generation-block + .generation-block {
+      border-top: 0.5px solid rgba(255,255,255,0.05);
+    }
+
+    .generation-block.stale .logo-slot {
+      opacity: 0.4;
+    }
+
+    .generation-block.stale .slot-svg-wrap.has-logo {
+      cursor: pointer;
+    }
+
+    .generation-header {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #2e2c2a;
+      margin-bottom: 20px;
+    }
+
+    .canvas-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* ── LOGO SLOT ────────────────────────────────── */
+    .logo-slot {
+      border: 0.5px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .slot-label {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #3e3b38;
+      font-weight: 400;
+    }
+
+    .slot-svg-wrap {
+      background: #1a1a1a;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .slot-svg-wrap.has-logo { cursor: pointer; }
+    .slot-svg-wrap.has-logo:hover { background: #1e1e1e; }
+
+    .slot-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .slot-loading-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      pointer-events: none;
+    }
+
+    .loading-rect {
+      width: 72%;
+      height: 48%;
+      background: #252525;
+      animation: loading-pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes loading-pulse {
+      0%, 100% { opacity: 0.25; }
+      50%       { opacity: 0.6; }
+    }
+
+    .loading-label {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #3a3835;
+      font-weight: 300;
+    }
+
+    .slot-error {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--accent);
+      padding: 12px 16px;
+      line-height: 1.8;
+      pointer-events: none;
+    }
+
+    .slot-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 20px;
+    }
+
+    .tag {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: lowercase;
+      color: #3e3b38;
+    }
+
+    .tag::before { content: '[ '; }
+    .tag::after  { content: ' ]'; }
+
+    .slot-exports {
+      display: flex;
+      gap: 8px;
+    }
+
+    .export-btn {
+      flex: 1;
+      background: transparent;
+      border: 0.5px solid rgba(255,255,255,0.12);
+      color: #4a4744;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 8px 0;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .export-btn:hover:not(:disabled) {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .export-btn:disabled { opacity: 0.18; cursor: not-allowed; }
+
+    .export-btn::before { content: '[ '; }
+    .export-btn::after  { content: ' ]'; }
+
+    /* ── LIGHTBOX ─────────────────────────────────── */
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(14,14,14,0.95);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lightbox.hidden { display: none; }
+
+    .lightbox-inner {
+      display: flex;
+      flex-direction: column;
+      width: min(860px, 88vw);
+    }
+
+    .lb-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0 14px;
+    }
+
+    .lb-meta-info {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #3e3b38;
+      font-weight: 300;
+    }
+
+    .lb-close-btn {
+      background: transparent;
+      border: 0.5px solid rgba(255,255,255,0.15);
+      color: #5a5754;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .lb-close-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+    .lb-close-btn::before { content: '[ '; }
+    .lb-close-btn::after  { content: ' ]'; }
+
+    #lb-svg-wrap {
+      background: #1a1a1a;
+      width: 100%;
+      aspect-ratio: 2 / 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lb-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .lb-export-row {
+      display: flex;
+      gap: 8px;
+      padding: 14px 0 0;
+    }
+
+    .lb-export-btn {
+      flex: 1;
+      background: transparent;
+      border: 0.5px solid rgba(255,255,255,0.12);
+      color: #4a4744;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 10px 0;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .lb-export-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+    .lb-export-btn::before { content: '[ '; }
+    .lb-export-btn::after  { content: ' ]'; }
+  </style>
+</head>
+<body>
+
+<!-- ── PROJECTS BAR ──────────────────────────────── -->
+<div id="projects-bar">
+  <div id="projects-tabs"></div>
+  <button id="new-project-btn">+ New</button>
+</div>
+
+<div id="app">
+
+  <!-- ── SIDEBAR ────────────────────────────────── -->
+  <aside id="sidebar">
+
+    <div class="sidebar-header">
+      <span class="logotype">Sigil</span>
+      <span class="version">V0.1</span>
+    </div>
+
+    <div class="sidebar-section">
+      <label class="field-label" for="brand-input">Brand</label>
+      <input type="text" id="brand-input" placeholder="Brand name" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="sidebar-section">
+      <label class="field-label" for="brief-input">Brief</label>
+      <textarea id="brief-input" placeholder="Describe the brand — what it does, who it's for, what it should feel like…"></textarea>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="field-label">Style</span>
+      <div class="style-grid">
+        <div class="style-option">
+          <input type="radio" name="style" id="s-wordmark" value="wordmark" checked>
+          <label for="s-wordmark">Wordmark</label>
+        </div>
+        <div class="style-option">
+          <input type="radio" name="style" id="s-monogram" value="monogram">
+          <label for="s-monogram">Monogram</label>
+        </div>
+        <div class="style-option">
+          <input type="radio" name="style" id="s-letterform" value="letterform">
+          <label for="s-letterform">Letterform</label>
+        </div>
+        <div class="style-option">
+          <input type="radio" name="style" id="s-abstract" value="abstract">
+          <label for="s-abstract">Abstract</label>
+        </div>
+        <div class="style-option">
+          <input type="radio" name="style" id="s-logomark" value="logomark-wordmark">
+          <label for="s-logomark">Logomark + Wordmark</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="field-label">Moodboard</span>
+      <div id="moodboard-zone">
+        <div class="moodboard-prompt" id="moodboard-prompt">Drop images or click to upload</div>
+        <div class="moodboard-thumbs" id="moodboard-thumbs" style="display:none"></div>
+      </div>
+      <input type="file" id="moodboard-file-input" accept="image/*" multiple>
+    </div>
+
+    <div class="sidebar-section">
+      <label class="field-label" for="api-key-input">Settings</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-api…" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="generate-wrap">
+      <button id="generate-btn">Generate</button>
+    </div>
+
+  </aside>
+
+  <!-- ── CANVAS ─────────────────────────────────── -->
+  <main id="canvas">
+
+    <div class="canvas-meta">
+      <span id="meta-brand">—</span>
+      <span id="meta-count">—</span>
+      <button id="clear-history-btn">Clear History</button>
+      <span id="meta-date">—</span>
+    </div>
+
+    <div id="canvas-history"></div>
+
+  </main>
+</div>
+
+<!-- ── LIGHTBOX ──────────────────────────────────── -->
+<div id="lightbox" class="hidden">
+  <div class="lightbox-inner">
+    <div class="lb-meta">
+      <span class="lb-meta-info" id="lb-meta-info">—</span>
+      <button class="lb-close-btn" id="lb-close-btn">Close</button>
+    </div>
+    <div id="lb-svg-wrap"></div>
+    <div class="lb-export-row">
+      <button class="lb-export-btn" id="lb-svg-btn">Export SVG</button>
+      <button class="lb-export-btn" id="lb-png-btn">Export PNG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SYSTEM PROMPT (non-negotiable constraints) ─────
+const SYSTEM_PROMPT =
+`You are a senior brand identity designer at a world-class studio — think Pentagram, Bureau Borsche, Wolff Olins. You have 20 years of experience and a strong point of view. You do not play it safe. You make decisions.
+
+BEFORE generating anything, reason through these steps silently:
+1. Study the moodboard analysis carefully. What is the dominant visual energy — heavy or airy, cold or warm, rigid or fluid, loud or silent, historical or forward-facing?
+2. What would a designer who deeply understood this brand do that a non-designer wouldn't think of? What is the unexpected but correct move?
+3. What typographic manipulation, spatial relationship, or compositional decision would make this logo feel authored — not generated?
+4. Sketch the composition in your mind: where does each element sit, exactly? What are the precise coordinates? Does anything overlap — if so, remove it. Is there enough space between elements? Would a designer be proud of this?
+5. What would you remove to make it stronger?
+Only then generate the SVG.
+
+MOODBOARD RULES — this is the most important input:
+- Treat the moodboard as a creative brief, not a suggestion. It defines the visual world this logo must inhabit.
+- If the moodboard says cold and industrial: use tight geometric sans-serif, wide tracking, hard edges
+- If the moodboard says warm and editorial: use high-contrast serif, intimate spacing, thin rules
+- If the moodboard says dark and minimal: use hairline weights, extreme negative space, restrained palette
+- If the moodboard says expressive and bold: use heavy weight, compressed tracking, strong geometry
+- If the moodboard shows hand-drawn lettering: use imperfect organic type spacing and irregular baseline
+- If the moodboard shows bold countercultural graphics: use heavy compressed type with strong geometric marks
+- If the moodboard shows y2k revival: use tight condensed sans with sharp geometric shapes
+- If the moodboard shows irreverent energy: break the grid intentionally, use unexpected scale contrast
+- The logo must feel like it came from the same world as the moodboard. If someone looked at the moodboard and then the logo, they should feel the connection immediately.
+
+TYPOGRAPHIC MANIPULATION RULES:
+- Do not just place a word in a font and call it a logo. That is not design.
+- Consider: extreme tracking (very tight -0.05em or very wide 0.5em+), extreme scale contrast between letters or words, a single letter at display scale paired with the rest of the name small, stacking letters vertically, splitting the wordmark across two lines with intentional optical alignment, using a different weight on one letter or syllable to create rhythm
+- A wordmark should feel like it was drawn, not typed. Achieve this through: letter-spacing decisions, scale relationships, spatial tension between elements, and precise vertical positioning
+- Every typographic decision should have a reason tied to the brand brief
+
+DESIGN PERSONALITY RULES:
+- Clean and professional is not always correct. Read the moodboard and brief carefully — if the energy is irreverent, bold, countercultural, handmade, or expressive, the logo must match that energy fully. A safe, minimal logo for a brand that should feel loud and weird is a failure.
+- Ask yourself: what is the personality of this brand? Timid brands get refined marks. Loud brands get loud marks. Weird brands get weird marks. Match the energy exactly.
+- You are allowed and encouraged to: use extremely heavy type weights, use compressed or extended letterforms, use thick stroke outlines on type or shapes, break baseline alignment intentionally, use overlapping elements when they create tension rather than confusion, use extreme scale contrast between two words or letters, mix all-caps compressed type with oversized display numerals or symbols
+- Think about these references when the moodboard is bold/expressive: vintage skateboard graphics, 70s psychedelic posters, Soviet constructivism, punk zine typography, early 90s rave flyers, independent record label aesthetics, hand-painted signage. Let these inform the energy of the mark even if the execution is still clean SVG.
+
+ADVANCED TYPOGRAPHIC TECHNIQUES — use these when the brief calls for personality:
+- Stacked compressed type: stack two words vertically with zero or negative line spacing so they feel like one solid typographic block
+- Outline type: render the wordmark as stroke-only text (no fill, thick stroke) for a bold graphic quality
+- Scale interruption: make one letter or word 3-4x larger than the rest, creating a dominant focal point
+- Baseline break: shift alternating letters up or down by 8-15px to create rhythm and imperfection
+- Counter play: use the enclosed negative space inside letters (O, P, B, D, R) as a deliberate design element — fill it, cut it, or frame it
+- Tight stack: compress two words so tightly they almost merge into one shape
+- Type as texture: repeat the brand name at very small scale in a grid or arc as a background pattern element (counts as one SVG element using a pattern or repeated text)
+
+MARK COMPLEXITY — when style is Logomark + Wordmark or Abstract:
+- The mark does not have to be a single circle or square. Consider: interlocking geometric forms, a letterform with a geometric cut through it, concentric shapes at different weights, a shape that references the brand's world abstractly but through pure geometry
+- A mark should have visual tension — two forces in relationship. A single circle has no tension. A circle bisected by a line has tension. A thick circle with a hairline circle inside it has tension. Build tension into every mark.
+- Stroke weight contrast is a powerful tool: combine a hairline stroke element with a filled bold element in the same mark
+
+MOODBOARD TRANSLATION RULES — be explicit:
+- If moodboard contains: hand lettering or imperfect type → use uneven tracking, intentional baseline irregularity, or outline type
+- If moodboard contains: bold graphic shapes, high contrast fills → use thick strokes, solid fills, maximum contrast between elements
+- If moodboard contains: retro or vintage references → use compressed serif or grotesque type, geometric ornamental elements, circular or badge-like compositions
+- If moodboard contains: illustration or character work → abstract the illustrative quality into geometric shape language — thick outlines, bold fills, strong silhouettes
+- If moodboard contains: psychedelic or expressive work → use extreme scale contrast, unexpected compositions, type that breaks the grid
+- The moodboard analysis tags shown to the user should reflect this translation explicitly — not just describe the moodboard but state how it influenced the design decision
+
+LOGOMARK ALIGNMENT RULES — critical:
+- When combining a mark with type, calculate positions explicitly
+- If mark is above type: mark centered at x=300, type centered at x=300, vertical gap between them exactly 20px, total composition centered in the 600x300 frame
+- If mark is left of type: calculate the total width of mark + gap + type, then offset both so the combined group is centered at x=300
+- Never place elements by guessing — derive every coordinate mathematically
+- Test: if you drew a bounding box around all elements, would it be centered in the frame?
+
+COLOR RULES:
+- Color is allowed but must be intentional and minimal. Maximum 3 colors per logo including black and white.
+- Never use gradients, color washes, or background fills. Color must live on specific elements only — a single letter, a geometric shape, a rule line, a counter fill.
+- Color must come from the moodboard analysis. If the moodboard contains warm terracotta tones — one element can use that tone. If the moodboard is cool and industrial — use a cold blue-grey as the single accent. If the moodboard is psychedelic — one bold saturated color is permitted as an accent against black or white type.
+- The color hierarchy is: primary (black or white for the main wordmark/mark), secondary (the moodboard-derived accent for one specific element), optional tertiary (a much lighter or darker variant of the accent only if it creates necessary contrast)
+- Color should create emphasis, not decoration. Ask: what is the one element that most benefits from color? Put it there only.
+- Never color the background rectangle or the entire wordmark uniformly — that is decoration, not design.
+- Good uses of color: a single letter in the wordmark, the counter of a monogram letter, one geometric element in a logomark, a thin rule line, a dot or punctuation mark used as a design element
+- Bad uses of color: gradient backgrounds, coloring all text the same accent color, random colored shapes, coloring elements just to add visual interest without a reason
+
+HARD RULES — violating any of these is a failure:
+- SVG is exactly 600x300, viewBox='0 0 600 300'
+- Maximum 5 SVG elements total. Every element must earn its place.
+- No element may overlap another element under any circumstances
+- All text must be fully readable, no clipping, no overflow, no cutoff
+- NEVER add a background fill or background rectangle to the SVG. The SVG background must always be transparent.
+- NEVER generate illustrative icons — no trees, no clouds, no animals, no plants, no objects, no people, no nature imagery of any kind. If the brief implies an icon, abstract it into pure geometry instead.
+- NEVER use gradients anywhere — not on backgrounds, not on text, not on shapes. Flat color only.
+- The logo renders on a dark background. Default text and shape colors must be white (#ffffff) or off-white (#f5f0e8). Accent colors from the moodboard are permitted per the COLOR RULES above. Never use near-black fills or strokes — they will be invisible on the dark canvas.
+- No foreignObject, no images, no clipPath, no embedded rasters
+- No drop shadows, no filters, no blur, no glow
+- No decorative shapes that don't serve a specific compositional purpose
+- Text must stay within x:40 to x:560, y:20 to y:280 — never outside these bounds
+- Every text element needs an explicit x, y, font-size, and text-anchor='middle'
+- Use dominant-baseline='middle' on all text elements
+- If using letter-spacing, account for the trailing space it adds — nudge x position left by (letter-spacing * character-count * 0.5) to keep text visually centered
+- The logo must feel like it was designed by a human designer with a strong point of view — not generated. Ask yourself: would a senior designer at a serious studio be proud to put this in their portfolio? If not, start over.
+
+COMPOSITION RULES:
+- The composition must have a clear visual hierarchy — one thing is most important, everything else supports it
+- Negative space is not empty — it is weight. Use it to balance the composition.
+- A single thin horizontal or vertical rule (stroke-width 0.5) is permitted if it creates structure or tension
+- Three possible compositions only: centered stack (elements stacked vertically on x=300), horizontal pair (mark left, type right, group centered), or asymmetric (intentional, with a clear reason)
+
+PER STYLE RULES:
+- Wordmark: The name is the logo but it must feel designed. Use tracking, scale, weight contrast, or line breaks to make it feel authored. One typographic move that a designer would make — not just a font choice.
+- Monogram: 1-2 letters, large, as the entire composition. Play with the negative space inside and around the letters. Could be hairline or bold — choose based on the moodboard. The letter(s) should feel like they were drawn for this brand.
+- Letterform: A single letter treated as a mark. Extend a stroke beyond its natural boundary, cut it with a geometric shape, or use its counter as the focal point. Should be recognizable but feel custom.
+- Abstract mark: Pure geometry that captures the emotional register of the brief. A circle with a cut. A rectangle with a line through it. Paired with the name in small, precise type. No illustrative shapes.
+- Logomark + Wordmark: Mark and type as a unified system. Same visual weight, same era, same energy. Calculate alignment precisely — they must feel like they belong together.
+
+EACH OF THE 3 VARIATIONS MUST BE DISTINCT:
+- Variation 1: The expected interpretation — refined, considered, directly responsive to the brief
+- Variation 2: A bolder typographic move — push the tracking, scale, or weight contrast further
+- Variation 3: The unexpected interpretation — a different structural approach, a different typographic register, something that surprises but feels right
+
+OUTPUT RULES: Return ONLY the raw SVG code. Your response must start with the characters < and s and v and g — nothing before it, not a single character. No thinking. No reasoning. No explanation. No markdown. No code fences. No asterisks. No labels. If your response contains any text other than the SVG itself it is a failure.`;
+
+// ── STATE ──────────────────────────────────────────
+const state = {
+  projects: [],          // [{id, brandName, brief, style, moodboardImages, moodboardAnalysis, generations}]
+  currentProjectId: null,
+  apiKey: localStorage.getItem('sigil_api_key') || '',
+  generating: false,
+  lightboxGenId: null,
+  lightboxSlot: null,
+};
+
+// ── DOM REFS ───────────────────────────────────────
+const $ = id => document.getElementById(id);
+const brandInput      = $('brand-input');
+const briefInput      = $('brief-input');
+const apiKeyInput     = $('api-key-input');
+const generateBtn     = $('generate-btn');
+const moodboardZone   = $('moodboard-zone');
+const moodboardThumbs = $('moodboard-thumbs');
+const moodboardPrompt = $('moodboard-prompt');
+const moodboardFile   = $('moodboard-file-input');
+const metaBrand       = $('meta-brand');
+const metaCount       = $('meta-count');
+const metaDate        = $('meta-date');
+const clearHistoryBtn = $('clear-history-btn');
+const canvasHistory   = $('canvas-history');
+const lightbox        = $('lightbox');
+const lbSvgWrap       = $('lb-svg-wrap');
+const projectsTabs    = $('projects-tabs');
+
+// ── UTILS ──────────────────────────────────────────
+function uid()        { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function fmtDate(d)   { return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase(); }
+function fmtTime(d)   { return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+function slug(s)      { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sigil'; }
+function escHtml(s)   { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function wait(ms)     { return new Promise(r => setTimeout(r, ms)); }
+
+function toast(msg) {
+  const el = document.createElement('div');
+  Object.assign(el.style, {
+    position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+    background: '#1a1a1a', color: 'var(--text)', border: '1px solid var(--border)',
+    fontFamily: 'var(--font-ui)', fontSize: '11px', letterSpacing: '0.12em',
+    textTransform: 'uppercase', padding: '10px 20px', zIndex: '9999',
+    pointerEvents: 'none', opacity: '0', transition: 'opacity 0.2s',
+  });
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 220); }, 2800);
+}
+
+// ── PROJECT HELPERS ────────────────────────────────
+function getCurrentProject() {
+  return state.projects.find(p => p.id === state.currentProjectId) || null;
+}
+
+function newProjectData(id) {
+  return { id, brandName: '', brief: '', style: 'wordmark', moodboardImages: [], moodboardAnalysis: null, generations: [] };
+}
+
+function saveProjects() {
+  try {
+    localStorage.setItem('sigil_projects', JSON.stringify(state.projects));
+    localStorage.setItem('sigil_current_project', state.currentProjectId);
+  } catch {
+    // Try without moodboard images if quota exceeded
+    try {
+      const slim = state.projects.map(p => ({ ...p, moodboardImages: [] }));
+      localStorage.setItem('sigil_projects', JSON.stringify(slim));
+      localStorage.setItem('sigil_current_project', state.currentProjectId);
+    } catch { /* silent fail */ }
+  }
+}
+
+function initProjects() {
+  const saved = localStorage.getItem('sigil_projects');
+  const savedCurrent = localStorage.getItem('sigil_current_project');
+  if (saved) {
+    try { state.projects = JSON.parse(saved); } catch { state.projects = []; }
+  }
+  if (!state.projects.length) {
+    const p = newProjectData(uid());
+    state.projects.push(p);
+  }
+  state.currentProjectId = (savedCurrent && state.projects.find(p => p.id === savedCurrent))
+    ? savedCurrent : state.projects[0].id;
+}
+
+function createProject() {
+  syncCurrentProjectFromUI();
+  const p = newProjectData(uid());
+  state.projects.push(p);
+  state.currentProjectId = p.id;
+  loadProjectIntoUI(p);
+  renderProjectsBar();
+  saveProjects();
+}
+
+function switchProject(id) {
+  if (id === state.currentProjectId) return;
+  syncCurrentProjectFromUI();
+  state.currentProjectId = id;
+  loadProjectIntoUI(getCurrentProject());
+  renderProjectsBar();
+  saveProjects();
+}
+
+function deleteProject(id) {
+  if (state.projects.length === 1) { toast('Cannot delete the last project.'); return; }
+  state.projects = state.projects.filter(p => p.id !== id);
+  if (state.currentProjectId === id) {
+    state.currentProjectId = state.projects[state.projects.length - 1].id;
+    loadProjectIntoUI(getCurrentProject());
+  }
+  renderProjectsBar();
+  saveProjects();
+}
+
+function syncCurrentProjectFromUI() {
+  const p = getCurrentProject();
+  if (!p) return;
+  p.brandName = brandInput.value.trim();
+  p.brief = briefInput.value.trim();
+  p.style = document.querySelector('input[name="style"]:checked')?.value || 'wordmark';
+}
+
+function loadProjectIntoUI(p) {
+  if (!p) return;
+  brandInput.value = p.brandName;
+  briefInput.value = p.brief;
+  const radio = document.querySelector(`input[name="style"][value="${p.style}"]`);
+  if (radio) radio.checked = true;
+  // Moodboard
+  const imgs = p.moodboardImages || [];
+  moodboardPrompt.style.display = imgs.length ? 'none' : 'block';
+  moodboardThumbs.style.display = imgs.length ? 'flex' : 'none';
+  renderMoodboardThumbs(imgs);
+  // Canvas
+  metaBrand.textContent = p.brandName ? p.brandName.toUpperCase() : '—';
+  metaDate.textContent = fmtDate(new Date());
+  metaCount.textContent = p.generations.length ? `${p.generations.length} Generation${p.generations.length > 1 ? 's' : ''}` : '—';
+  renderHistory(p);
+}
+
+// ── PROJECTS BAR ───────────────────────────────────
+function renderProjectsBar() {
+  projectsTabs.innerHTML = '';
+  state.projects.forEach(p => {
+    const tab = document.createElement('div');
+    tab.className = 'project-tab' + (p.id === state.currentProjectId ? ' active' : '');
+    tab.dataset.id = p.id;
+
+    const name = document.createElement('span');
+    name.className = 'tab-name';
+    name.textContent = p.brandName || 'Untitled';
+
+    const close = document.createElement('button');
+    close.className = 'tab-close';
+    close.textContent = '×';
+    close.addEventListener('click', e => { e.stopPropagation(); deleteProject(p.id); });
+
+    tab.appendChild(name);
+    tab.appendChild(close);
+    tab.addEventListener('click', () => switchProject(p.id));
+    projectsTabs.appendChild(tab);
+  });
+}
+
+// ── MOODBOARD ──────────────────────────────────────
+async function handleFiles(fileList) {
+  const p = getCurrentProject();
+  if (!p) return;
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  for (const f of files) {
+    const { dataUrl, base64 } = await readBase64(f);
+    p.moodboardImages.push({ dataUrl, base64, mediaType: f.type });
+  }
+  renderMoodboard();
+  saveProjects();
+}
+
+function readBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload  = e => { const d = e.target.result; resolve({ dataUrl: d, base64: d.split(',')[1] }); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function renderMoodboard() {
+  const p = getCurrentProject();
+  const imgs = p ? p.moodboardImages : [];
+  moodboardPrompt.style.display = imgs.length ? 'none' : 'block';
+  moodboardThumbs.style.display = imgs.length ? 'flex' : 'none';
+  renderMoodboardThumbs(imgs);
+}
+
+function renderMoodboardThumbs(imgs) {
+  moodboardThumbs.innerHTML = '';
+  imgs.forEach((img, i) => {
+    const item = document.createElement('div');
+    item.className = 'thumb-item';
+    const rm = document.createElement('button');
+    rm.className = 'thumb-remove';
+    rm.textContent = '×';
+    rm.addEventListener('click', e => {
+      e.stopPropagation();
+      const p = getCurrentProject();
+      if (p) { p.moodboardImages.splice(i, 1); renderMoodboard(); saveProjects(); }
+    });
+    const el = document.createElement('img');
+    el.src = img.dataUrl;
+    el.alt = '';
+    item.appendChild(el);
+    item.appendChild(rm);
+    moodboardThumbs.appendChild(item);
+  });
+}
+
+// ── HISTORY RENDERING ──────────────────────────────
+function renderHistory(p) {
+  canvasHistory.innerHTML = '';
+  if (!p || !p.generations.length) return;
+  p.generations.forEach((gen, idx) => {
+    canvasHistory.appendChild(buildGenerationBlock(gen, idx === 0));
+  });
+}
+
+function buildGenerationBlock(gen, isLatest) {
+  const block = document.createElement('div');
+  block.className = 'generation-block' + (isLatest ? '' : ' stale');
+  block.id = `gen-block-${gen.id}`;
+
+  const header = document.createElement('div');
+  header.className = 'generation-header';
+  header.textContent = `[ Generation ${String(gen.num).padStart(2, '0')} — ${gen.timestamp} ]`;
+  block.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'canvas-slots';
+
+  [0, 1, 2].forEach(i => {
+    grid.appendChild(buildSlotEl(gen, i));
+  });
+
+  block.appendChild(grid);
+  return block;
+}
+
+function buildSlotEl(gen, i) {
+  const slot = document.createElement('div');
+  slot.className = 'logo-slot';
+
+  const label = document.createElement('span');
+  label.className = 'slot-label';
+  label.textContent = `Option 0${i + 1}`;
+
+  const svgWrap = document.createElement('div');
+  svgWrap.className = 'slot-svg-wrap';
+  svgWrap.id = `slot-svg-${gen.id}-${i}`;
+
+  const tagsEl = document.createElement('div');
+  tagsEl.className = 'slot-tags';
+  tagsEl.id = `tags-${gen.id}-${i}`;
+
+  const exportsEl = document.createElement('div');
+  exportsEl.className = 'slot-exports';
+
+  const btnSvg = document.createElement('button');
+  btnSvg.className = 'export-btn';
+  btnSvg.id = `export-svg-${gen.id}-${i}`;
+  btnSvg.textContent = 'SVG';
+  btnSvg.disabled = true;
+
+  const btnPng = document.createElement('button');
+  btnPng.className = 'export-btn';
+  btnPng.id = `export-png-${gen.id}-${i}`;
+  btnPng.textContent = 'PNG';
+  btnPng.disabled = true;
+
+  exportsEl.appendChild(btnSvg);
+  exportsEl.appendChild(btnPng);
+
+  slot.appendChild(label);
+  slot.appendChild(svgWrap);
+  slot.appendChild(tagsEl);
+  slot.appendChild(exportsEl);
+
+  // Wire up events
+  const p = getCurrentProject();
+  const brandName = p ? p.brandName : 'sigil';
+
+  svgWrap.addEventListener('click', () => {
+    if (gen.results[i]) openLightbox(gen.id, i);
+  });
+  btnSvg.addEventListener('click', () => {
+    if (gen.results[i]) exportSVG(gen.results[i].svg, `${slug(brandName)}-option-${i + 1}.svg`);
+  });
+  btnPng.addEventListener('click', () => {
+    if (gen.results[i]) exportPNG(gen.results[i].svg, `${slug(brandName)}-option-${i + 1}.png`);
+  });
+
+  // Populate if result already exists
+  if (gen.results[i]) {
+    populateSlot(gen, i);
+  } else {
+    svgWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+  }
+
+  return slot;
+}
+
+function populateSlot(gen, i) {
+  const r = gen.results[i];
+  if (!r) return;
+
+  const svgWrap = $(`slot-svg-${gen.id}-${i}`);
+  if (!svgWrap) return;
+
+  svgWrap.innerHTML = r.svg;
+  svgWrap.classList.add('has-logo');
+
+  const svg = svgWrap.querySelector('svg');
+  if (svg) {
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  }
+
+  const btnSvg = $(`export-svg-${gen.id}-${i}`);
+  const btnPng = $(`export-png-${gen.id}-${i}`);
+  if (btnSvg) btnSvg.disabled = false;
+  if (btnPng) btnPng.disabled = false;
+
+  const tagsEl = $(`tags-${gen.id}-${i}`);
+  if (tagsEl) tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+}
+
+function setSlotError(genId, i, msg) {
+  const svgWrap = $(`slot-svg-${genId}-${i}`);
+  if (svgWrap) {
+    svgWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
+    svgWrap.classList.remove('has-logo');
+  }
+}
+
+// ── GENERATE ───────────────────────────────────────
+async function generate() {
+  const brand = brandInput.value.trim();
+  const brief = briefInput.value.trim();
+  if (!brand)         { toast('Enter a brand name.'); return; }
+  if (!brief)         { toast('Enter a brief.'); return; }
+  if (!state.apiKey)  { toast('Paste your Anthropic API key in [ SETTINGS ].'); return; }
+  if (state.generating) return;
+
+  state.generating = true;
+  generateBtn.disabled    = true;
+  generateBtn.textContent = 'Generating…';
+
+  const p = getCurrentProject();
+  p.brandName = brand;
+  p.brief     = brief;
+  p.style     = document.querySelector('input[name="style"]:checked')?.value || 'wordmark';
+  p.moodboardAnalysis = null;
+
+  // Create new generation
+  const now = new Date();
+  const gen = {
+    id: uid(),
+    num: p.generations.length + 1,
+    timestamp: fmtTime(now),
+    results: [null, null, null],
+  };
+  p.generations.unshift(gen);
+
+  // Update meta bar
+  metaBrand.textContent = brand.toUpperCase();
+  metaDate.textContent  = fmtDate(now);
+  metaCount.textContent = `${p.generations.length} Generation${p.generations.length > 1 ? 's' : ''}`;
+
+  // Mark previous generation stale
+  const firstBlock = canvasHistory.firstElementChild;
+  if (firstBlock) firstBlock.classList.add('stale');
+
+  // Prepend new generation block
+  const block = buildGenerationBlock(gen, true);
+  canvasHistory.insertBefore(block, canvasHistory.firstChild);
+  canvasHistory.scrollTop = 0;
+
+  // Update tab name
+  renderProjectsBar();
+
+  try {
+    if (p.moodboardImages.length > 0) {
+      p.moodboardAnalysis = await analyzeMoodboard(p.moodboardImages);
+    }
+
+    const hints = [
+      'You are generating VARIATION 1 — the expected interpretation: refined, considered, directly responsive to the brief. The most resolved version of the obvious approach.',
+      'You are generating VARIATION 2 — the bolder typographic move: push the tracking, scale, or weight contrast significantly further than feels safe. Make a stronger typographic statement.',
+      'You are generating VARIATION 3 — the unexpected interpretation: choose a different structural approach or typographic register entirely. Something that surprises but feels exactly right for this brand.',
+    ];
+
+    await Promise.all(hints.map((h, i) => generateLogo(p, gen, i, h)));
+
+  } catch (err) {
+    [0, 1, 2].forEach(i => {
+      if (!gen.results[i]) setSlotError(gen.id, i, err.message || 'Generation failed.');
+    });
+  } finally {
+    state.generating         = false;
+    generateBtn.disabled     = false;
+    generateBtn.textContent  = 'Generate';
+    saveProjects();
+  }
+}
+
+// ── API: MOODBOARD VISION ──────────────────────────
+async function analyzeMoodboard(images) {
+  const content = [
+    ...images.map(img => ({
+      type: 'image',
+      source: { type: 'base64', media_type: img.mediaType, data: img.base64 },
+    })),
+    {
+      type: 'text',
+      text: 'Analyze these moodboard images for a brand identity project. Extract and describe: (1) COLOR TEMPERATURE: warm/cool/neutral, specific palette notes; (2) VISUAL WEIGHT: heavy/airy/balanced; (3) ERA REFERENCE: any historical movement or period reference; (4) EMOTIONAL REGISTER: 3–5 words. Be terse and specific. Format exactly as: COLOR TEMPERATURE: ... | VISUAL WEIGHT: ... | ERA REFERENCE: ... | EMOTIONAL REGISTER: ...',
+    },
+  ];
+  const res = await call({ model: 'claude-sonnet-4-6', max_tokens: 300, messages: [{ role: 'user', content }] });
+  return res.content[0].text.trim();
+}
+
+// ── API: LOGO GENERATION ───────────────────────────
+async function generateLogo(p, gen, i, variationHint) {
+  const styleNames = {
+    'wordmark': 'Wordmark', 'monogram': 'Monogram', 'letterform': 'Letterform',
+    'abstract': 'Abstract mark', 'logomark-wordmark': 'Logomark + Wordmark',
+  };
+  const styleName = styleNames[p.style] || 'Wordmark';
+
+  // Build user message content: moodboard images → analysis text → brief
+  const content = [];
+
+  if (p.moodboardImages.length > 0) {
+    content.push({ type: 'text', text: 'MOODBOARD REFERENCES:' });
+    p.moodboardImages.forEach(img => {
+      content.push({ type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.base64 } });
+    });
+  }
+
+  const userText = [
+    p.moodboardAnalysis ? `MOODBOARD ANALYSIS:\n${p.moodboardAnalysis}` : '',
+    `BRIEF:\nBrand name: ${p.brandName}\nDescription: ${p.brief}\nStyle: ${styleName}`,
+    `VARIATION DIRECTION:\n${variationHint}`,
+  ].filter(Boolean).join('\n\n');
+
+  content.push({ type: 'text', text: userText });
+
+  const res = await call({
+    model: 'claude-opus-4-7',
+    max_tokens: 4000,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content }],
+  });
+
+  const raw = res.content[0].text;
+  // Extract only the SVG block — discard any reasoning or text before/after
+  const m = raw.match(/<svg[\s\S]*?<\/svg>/i);
+  if (!m) throw new Error('No SVG returned. The model may have returned reasoning text only.');
+  const svg = m[0];
+
+  gen.results[i] = { svg, tags: buildTags(p) };
+  populateSlot(gen, i);
+}
+
+// ── API FETCH ──────────────────────────────────────
+async function call(body, retry = 0) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type':                              'application/json',
+      'x-api-key':                                 state.apiKey,
+      'anthropic-version':                         '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 429 && retry < 1) {
+    await wait(5000);
+    return call(body, retry + 1);
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// ── TAGS ───────────────────────────────────────────
+function buildTags(p) {
+  if (!p.moodboardAnalysis) {
+    const defaults = {
+      'wordmark': ['pure typography', 'brand as type'],
+      'monogram': ['letterform mark', 'initials'],
+      'letterform': ['custom letter', 'abstract form'],
+      'abstract': ['geometric mark', 'pure form'],
+      'logomark-wordmark': ['mark + type', 'unified system'],
+    };
+    return defaults[p.style] || [];
+  }
+  return p.moodboardAnalysis.split('|').slice(0, 4).map(seg => {
+    const v = seg.split(':').slice(1).join(':').trim().toLowerCase();
+    return v || seg.trim().toLowerCase();
+  }).filter(Boolean);
+}
+
+// ── LIGHTBOX ───────────────────────────────────────
+function openLightbox(genId, slotIndex) {
+  state.lightboxGenId = genId;
+  state.lightboxSlot  = slotIndex;
+
+  const p   = getCurrentProject();
+  const gen = p?.generations.find(g => g.id === genId);
+  const r   = gen?.results[slotIndex];
+  if (!r) return;
+
+  lbSvgWrap.innerHTML = r.svg;
+  const svg = lbSvgWrap.querySelector('svg');
+  if (svg) {
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  }
+
+  const styleNames = { 'wordmark':'Wordmark','monogram':'Monogram','letterform':'Letterform','abstract':'Abstract','logomark-wordmark':'Logomark + Wordmark' };
+  const label = [
+    p.brandName.toUpperCase(),
+    styleNames[p.style] || p.style,
+    `Option 0${slotIndex + 1}`,
+  ].filter(Boolean).join(' · ');
+  $('lb-meta-info').textContent = label;
+  lightbox.classList.remove('hidden');
+}
+
+function closeLightbox() {
+  lightbox.classList.add('hidden');
+  state.lightboxGenId = null;
+  state.lightboxSlot  = null;
+}
+
+// ── EXPORT ─────────────────────────────────────────
+function exportSVG(svgStr, filename) {
+  const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml' }));
+  trigger(url, filename);
+  URL.revokeObjectURL(url);
+}
+
+function exportPNG(svgStr, filename) {
+  const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml' }));
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = 1200; c.height = 600;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, 1200, 600);
+    ctx.drawImage(img, 0, 0, 1200, 600);
+    trigger(c.toDataURL('image/png'), filename);
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = () => { exportSVG(svgStr, filename.replace('.png', '.svg')); URL.revokeObjectURL(url); };
+  img.src = url;
+}
+
+function trigger(href, filename) {
+  const a = document.createElement('a');
+  a.href = href; a.download = filename; a.click();
+}
+
+// ── INIT ───────────────────────────────────────────
+function init() {
+  initProjects();
+
+  if (state.apiKey) apiKeyInput.value = state.apiKey;
+  metaDate.textContent = fmtDate(new Date());
+
+  // Sidebar inputs → sync to current project
+  brandInput.addEventListener('input', e => {
+    const p = getCurrentProject(); if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); }
+  });
+  briefInput.addEventListener('input', e => {
+    const p = getCurrentProject(); if (p) p.brief = e.target.value.trim();
+  });
+  document.querySelectorAll('input[name="style"]').forEach(r =>
+    r.addEventListener('change', e => { const p = getCurrentProject(); if (p) p.style = e.target.value; })
+  );
+  apiKeyInput.addEventListener('input', e => {
+    state.apiKey = e.target.value.trim();
+    localStorage.setItem('sigil_api_key', state.apiKey);
+  });
+
+  generateBtn.addEventListener('click', generate);
+
+  // Moodboard
+  moodboardZone.addEventListener('click',     () => moodboardFile.click());
+  moodboardZone.addEventListener('dragover',  e => { e.preventDefault(); moodboardZone.classList.add('drag-over'); });
+  moodboardZone.addEventListener('dragleave', () => moodboardZone.classList.remove('drag-over'));
+  moodboardZone.addEventListener('drop',      e => { e.preventDefault(); moodboardZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+  moodboardFile.addEventListener('change',    e => { handleFiles(e.target.files); moodboardFile.value = ''; });
+
+  // Clear history
+  clearHistoryBtn.addEventListener('click', () => {
+    const p = getCurrentProject();
+    if (!p || !p.generations.length) return;
+    p.generations = [];
+    p.moodboardAnalysis = null;
+    canvasHistory.innerHTML = '';
+    metaCount.textContent = '—';
+    saveProjects();
+  });
+
+  // Lightbox
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  $('lb-close-btn').addEventListener('click', closeLightbox);
+  $('lb-svg-btn').addEventListener('click', () => {
+    const p   = getCurrentProject();
+    const gen = p?.generations.find(g => g.id === state.lightboxGenId);
+    const r   = gen?.results[state.lightboxSlot];
+    if (r) exportSVG(r.svg, `${slug(p.brandName)}-option-${state.lightboxSlot + 1}.svg`);
+  });
+  $('lb-png-btn').addEventListener('click', () => {
+    const p   = getCurrentProject();
+    const gen = p?.generations.find(g => g.id === state.lightboxGenId);
+    const r   = gen?.results[state.lightboxSlot];
+    if (r) exportPNG(r.svg, `${slug(p.brandName)}-option-${state.lightboxSlot + 1}.png`);
+  });
+
+  // Projects bar
+  $('new-project-btn').addEventListener('click', createProject);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  // Render initial state
+  renderProjectsBar();
+  loadProjectIntoUI(getCurrentProject());
+}
+
+init();
+</script>
+</body>
+</html>
