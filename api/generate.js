@@ -10,6 +10,30 @@ Variation 2: The mark + type direction — one simple but smart geometric mark p
 Variation 3: The unexpected direction — MUST include a geometric mark combined with type. The surprise is in the relationship: the mark interrupts the type, the type is dwarfed by a single letter used as a mark, the layout defies expected hierarchy. Break one structural rule deliberately. This is the direction that surprises the client but immediately feels right — not random, but inevitable.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MARK PERSONALITY RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A mark must have a story. Before drawing anything, decide: what is the ONE idea this mark communicates about this specific brand? If you can't answer that in one sentence, think longer.
+
+BANNED — these are defaults, not design decisions:
+- Plain crosshairs
+- Unmodified circles, squares, or triangles used as-is
+- Generic monogram letters placed large with no modification
+- Any symbol that could appear in a stock icon library
+
+INSTEAD, consider:
+- A letter that has been deliberately interrupted — a stroke extended beyond its natural endpoint, a counter filled in, a crossbar removed or repositioned
+- A geometric form that references the brand's specific process or world — a registration mark for a print shop, a wax seal outline for a luxury brand, a signal wave for a music brand, a thread path for a tailor
+- Two letterforms that create a new shape when combined — the negative space between them becomes the mark
+- A shape that only makes sense when you know what the brand does — not mysterious, but specific
+
+TENSION REQUIREMENT: Every mark must have one deliberate interruption, contrast, or unexpected detail that makes you look twice. A circle with one arc removed. A letter with a geometric cut through it. A form that is almost symmetrical but not quite.
+
+The mark must feel invented for this brand — not pulled from a library. Ask: if you covered the wordmark and showed only the mark to a designer, would they recognize the brand world it came from? If not, redesign it.
+
+For Variation 2 specifically: the mark is the hero. It must be bold enough to work as a standalone stamp, badge, or embossed detail on packaging. Type supports the mark — not the other way around.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SENIOR DESIGNER RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
