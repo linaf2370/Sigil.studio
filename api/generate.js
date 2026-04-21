@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'Server configuration error' });
+    return res.status(500).json({ error: 'Missing environment variable: ANTHROPIC_API_KEY' });
   }
 
   const styleName = STYLE_NAMES[style] || 'Wordmark';

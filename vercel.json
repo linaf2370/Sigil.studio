@@ -1,9 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/generate.js":  { "maxDuration": 60 },
-    "api/analyze.js":   { "maxDuration": 30 },
-    "api/replicate.js": { "maxDuration": 60 }
+    "api/*.js": { "maxDuration": 60 }
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },

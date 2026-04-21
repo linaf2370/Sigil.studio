@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
 
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) {
-    return res.status(500).json({ error: 'Server configuration error' });
+    return res.status(500).json({ error: 'Missing environment variable: REPLICATE_API_TOKEN' });
   }
 
   try {
