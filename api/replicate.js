@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
 
   try {
     // Create prediction
-    const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions', {
+    const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${token}`,
@@ -38,12 +38,12 @@ module.exports = async (req, res) => {
 
     let prediction = await createRes.json();
 
-    // Use Prefer: wait for synchronous long-poll on the GET URL
+    // Long-poll the GET URL — Replicate holds the connection until done
     if (prediction.status !== 'succeeded' && prediction.status !== 'failed' && prediction.urls?.get) {
       const pollRes = await fetch(prediction.urls.get, {
         headers: {
           'Authorization': `Token ${token}`,
-          'Prefer': 'wait=50',
+          'Prefer': 'wait=25',
         },
       });
       if (pollRes.ok) {
@@ -51,15 +51,15 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Fallback manual polling if Prefer: wait wasn't honoured
+    // Fallback: manual polling at 2s intervals, max 10 attempts (~20s)
     let attempts = 0;
     while (
       prediction.status !== 'succeeded' &&
       prediction.status !== 'failed' &&
       prediction.status !== 'canceled' &&
-      attempts < 20
+      attempts < 10
     ) {
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 2000));
       const pollRes = await fetch(prediction.urls.get, {
         headers: { 'Authorization': `Token ${token}` },
       });

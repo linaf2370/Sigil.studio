@@ -1301,12 +1301,27 @@ async function generateLogo(p, gen, i, variationHint) {
 
   // Phase 2: Replicate generates mark image
   if (genData.markPrompt) {
+    const markWrapId = `slot-mark-${gen.id}-${i}`;
+    let elapsed = 0;
+    const countdown = setInterval(() => {
+      elapsed++;
+      const label = $(markWrapId)?.querySelector('.loading-label');
+      if (label) label.textContent = `Generating mark… ${elapsed}s`;
+    }, 1000);
+
+    const controller = new AbortController();
+    const killTimer  = setTimeout(() => controller.abort(), 30000);
+
     try {
       const repRes = await fetch('/api/replicate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: genData.markPrompt }),
+        signal: controller.signal,
       });
+      clearTimeout(killTimer);
+      clearInterval(countdown);
+
       if (repRes.ok) {
         const repData = await repRes.json();
         if (repData.imageUrl) {
@@ -1314,8 +1329,20 @@ async function generateLogo(p, gen, i, variationHint) {
           gen.results[i].markPrompt   = genData.markPrompt;
           populateSlot(gen, i);
         }
+      } else {
+        const err = await repRes.json().catch(() => ({}));
+        const mw = $(markWrapId);
+        if (mw) mw.innerHTML = `<div class="slot-error">[ Mark failed ]<br><br>${escHtml(err.error || `Error ${repRes.status}`)}</div>`;
       }
-    } catch { /* wordmark is still usable without the mark image */ }
+    } catch (err) {
+      clearTimeout(killTimer);
+      clearInterval(countdown);
+      const mw = $(markWrapId);
+      if (mw) {
+        const msg = err.name === 'AbortError' ? 'Timed out after 30s' : (err.message || 'Mark generation failed');
+        mw.innerHTML = `<div class="slot-error">[ Mark failed ]<br><br>${escHtml(msg)}</div>`;
+      }
+    }
   }
 }
 
