@@ -464,9 +464,30 @@
       font-weight: 400;
     }
 
-    .slot-svg-wrap {
+    .slot-mark-wrap {
       background: #1a1a1a;
-      height: 220px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .slot-mark-wrap.has-mark { cursor: pointer; }
+    .slot-mark-wrap.has-mark:hover { background: #1e1e1e; }
+
+    .slot-mark-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .slot-wordmark-wrap {
+      background: #1a1a1a;
+      height: 110px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -476,10 +497,10 @@
       flex-shrink: 0;
     }
 
-    .slot-svg-wrap.has-logo { cursor: pointer; }
-    .slot-svg-wrap.has-logo:hover { background: #1e1e1e; }
+    .slot-wordmark-wrap.has-logo { cursor: pointer; }
+    .slot-wordmark-wrap.has-logo:hover { background: #1e1e1e; }
 
-    .slot-svg-wrap svg {
+    .slot-wordmark-wrap svg {
       width: 100%;
       height: 100%;
       display: block;
@@ -625,17 +646,36 @@
     .lb-close-btn::before { content: '[ '; }
     .lb-close-btn::after  { content: ' ]'; }
 
-    #lb-svg-wrap {
+    #lb-mark-wrap {
       background: #1a1a1a;
       width: 100%;
-      aspect-ratio: 2 / 1;
+      aspect-ratio: 1 / 1;
+      max-height: 420px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    #lb-svg-wrap svg {
+    #lb-mark-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #lb-wordmark-wrap {
+      background: #1a1a1a;
+      width: 100%;
+      height: 110px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    #lb-wordmark-wrap svg {
       width: 100%;
       height: 100%;
       display: block;
@@ -757,7 +797,8 @@
       <span class="lb-meta-info" id="lb-meta-info">—</span>
       <button class="lb-close-btn" id="lb-close-btn">Close</button>
     </div>
-    <div id="lb-svg-wrap"></div>
+    <div id="lb-mark-wrap"></div>
+    <div id="lb-wordmark-wrap"></div>
     <div class="lb-export-row">
       <button class="lb-export-btn" id="lb-svg-btn">Export SVG</button>
       <button class="lb-export-btn" id="lb-png-btn">Export PNG</button>
@@ -790,7 +831,6 @@ const metaDate        = $('meta-date');
 const clearHistoryBtn = $('clear-history-btn');
 const canvasHistory   = $('canvas-history');
 const lightbox        = $('lightbox');
-const lbSvgWrap       = $('lb-svg-wrap');
 const projectsTabs    = $('projects-tabs');
 
 // ── UTILS ──────────────────────────────────────────
@@ -1023,9 +1063,13 @@ function buildSlotEl(gen, i) {
   label.className = 'slot-label';
   label.textContent = `Option 0${i + 1}`;
 
-  const svgWrap = document.createElement('div');
-  svgWrap.className = 'slot-svg-wrap';
-  svgWrap.id = `slot-svg-${gen.id}-${i}`;
+  const markWrap = document.createElement('div');
+  markWrap.className = 'slot-mark-wrap';
+  markWrap.id = `slot-mark-${gen.id}-${i}`;
+
+  const wordmarkWrap = document.createElement('div');
+  wordmarkWrap.className = 'slot-wordmark-wrap';
+  wordmarkWrap.id = `slot-wordmark-${gen.id}-${i}`;
 
   const tagsEl = document.createElement('div');
   tagsEl.className = 'slot-tags';
@@ -1050,29 +1094,35 @@ function buildSlotEl(gen, i) {
   exportsEl.appendChild(btnPng);
 
   slot.appendChild(label);
-  slot.appendChild(svgWrap);
+  slot.appendChild(markWrap);
+  slot.appendChild(wordmarkWrap);
   slot.appendChild(tagsEl);
   slot.appendChild(exportsEl);
 
-  // Wire up events
   const p = getCurrentProject();
   const brandName = p ? p.brandName : 'sigil';
 
-  svgWrap.addEventListener('click', () => {
-    if (gen.results[i]) openLightbox(gen.id, i);
+  markWrap.addEventListener('click', () => {
+    if (gen.results[i]?.markImageUrl || gen.results[i]?.wordmarkSvg) openLightbox(gen.id, i);
+  });
+  wordmarkWrap.addEventListener('click', () => {
+    if (gen.results[i]?.wordmarkSvg) openLightbox(gen.id, i);
   });
   btnSvg.addEventListener('click', () => {
-    if (gen.results[i]) exportSVG(gen.results[i].svg, `${slug(brandName)}-option-${i + 1}.svg`);
+    const r = gen.results[i];
+    const svg = r?.wordmarkSvg || r?.svg;
+    if (svg) exportSVG(svg, `${slug(brandName)}-wordmark-${i + 1}.svg`);
   });
   btnPng.addEventListener('click', () => {
-    if (gen.results[i]) exportPNG(gen.results[i].svg, `${slug(brandName)}-option-${i + 1}.png`);
+    const r = gen.results[i];
+    if (r) exportCombinedPNG(r.markImageUrl, r.wordmarkSvg || r.svg, `${slug(brandName)}-logo-${i + 1}.png`);
   });
 
-  // Populate if result already exists
   if (gen.results[i]) {
     populateSlot(gen, i);
   } else {
-    svgWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+    markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating mark…</div></div>';
+    wordmarkWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
   }
 
   return slot;
@@ -1082,34 +1132,59 @@ function populateSlot(gen, i) {
   const r = gen.results[i];
   if (!r) return;
 
-  const svgWrap = $(`slot-svg-${gen.id}-${i}`);
-  if (!svgWrap) return;
+  // Backward compat: old saves used r.svg, new format uses r.wordmarkSvg
+  const wordmarkSvg = r.wordmarkSvg || r.svg;
 
-  svgWrap.innerHTML = r.svg;
-  svgWrap.classList.add('has-logo');
-
-  const svg = svgWrap.querySelector('svg');
-  if (svg) {
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', '100%');
-    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  // Populate wordmark SVG
+  const wordmarkWrap = $(`slot-wordmark-${gen.id}-${i}`);
+  if (wordmarkWrap) {
+    if (wordmarkSvg) {
+      wordmarkWrap.innerHTML = wordmarkSvg;
+      wordmarkWrap.classList.add('has-logo');
+      const svg = wordmarkWrap.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 600 300');
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      }
+    } else {
+      wordmarkWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
+    }
   }
 
+  // Populate mark image
+  const markWrap = $(`slot-mark-${gen.id}-${i}`);
+  if (markWrap) {
+    if (r.markImageUrl) {
+      const img = document.createElement('img');
+      img.src = r.markImageUrl;
+      img.alt = '';
+      markWrap.innerHTML = '';
+      markWrap.appendChild(img);
+      markWrap.classList.add('has-mark');
+    } else {
+      markWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating mark…</div></div>';
+    }
+  }
+
+  // Enable export buttons as soon as wordmark is ready
   const btnSvg = $(`export-svg-${gen.id}-${i}`);
   const btnPng = $(`export-png-${gen.id}-${i}`);
-  if (btnSvg) btnSvg.disabled = false;
-  if (btnPng) btnPng.disabled = false;
+  if (btnSvg) btnSvg.disabled = !wordmarkSvg;
+  if (btnPng) btnPng.disabled = !wordmarkSvg;
 
   const tagsEl = $(`tags-${gen.id}-${i}`);
-  if (tagsEl) tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+  if (tagsEl && r.tags) tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
 }
 
 function setSlotError(genId, i, msg) {
-  const svgWrap = $(`slot-svg-${genId}-${i}`);
-  if (svgWrap) {
-    svgWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
-    svgWrap.classList.remove('has-logo');
+  const markWrap = $(`slot-mark-${genId}-${i}`);
+  const wordmarkWrap = $(`slot-wordmark-${genId}-${i}`);
+  if (markWrap) markWrap.innerHTML = '';
+  if (wordmarkWrap) {
+    wordmarkWrap.innerHTML = `<div class="slot-error">[ Error ]<br><br>${escHtml(msg)}</div>`;
+    wordmarkWrap.classList.remove('has-logo');
   }
 }
 
@@ -1200,7 +1275,8 @@ async function analyzeMoodboard(images) {
 
 // ── API: LOGO GENERATION ───────────────────────────
 async function generateLogo(p, gen, i, variationHint) {
-  const res = await fetch('/api/generate', {
+  // Phase 1: Claude generates mark prompt + wordmark SVG
+  const genRes = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -1212,13 +1288,35 @@ async function generateLogo(p, gen, i, variationHint) {
       moodboardImages: p.moodboardImages.map(img => ({ base64: img.base64, mediaType: img.mediaType })),
     }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Generation failed (${res.status})`);
+  if (!genRes.ok) {
+    const err = await genRes.json().catch(() => ({}));
+    throw new Error(err.error || `Generation failed (${genRes.status})`);
   }
-  const data = await res.json();
-  gen.results[i] = { svg: data.svg, tags: buildTags(p) };
+  const genData = await genRes.json();
+
+  // Show wordmark immediately while Replicate runs
+  gen.results[i] = { wordmarkSvg: genData.wordmarkSvg, markImageUrl: null, tags: buildTags(p) };
   populateSlot(gen, i);
+  saveProjects();
+
+  // Phase 2: Replicate generates mark image
+  if (genData.markPrompt) {
+    try {
+      const repRes = await fetch('/api/replicate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: genData.markPrompt }),
+      });
+      if (repRes.ok) {
+        const repData = await repRes.json();
+        if (repData.imageUrl) {
+          gen.results[i].markImageUrl = repData.imageUrl;
+          gen.results[i].markPrompt   = genData.markPrompt;
+          populateSlot(gen, i);
+        }
+      }
+    } catch { /* wordmark is still usable without the mark image */ }
+  }
 }
 
 
@@ -1250,8 +1348,22 @@ function openLightbox(genId, slotIndex) {
   const r   = gen?.results[slotIndex];
   if (!r) return;
 
-  lbSvgWrap.innerHTML = r.svg;
-  const svg = lbSvgWrap.querySelector('svg');
+  const lbMarkWrap     = $('lb-mark-wrap');
+  const lbWordmarkWrap = $('lb-wordmark-wrap');
+
+  // Mark image
+  lbMarkWrap.innerHTML = '';
+  if (r.markImageUrl) {
+    const img = document.createElement('img');
+    img.src = r.markImageUrl;
+    img.alt = '';
+    lbMarkWrap.appendChild(img);
+  }
+
+  // Wordmark SVG (backward compat: old saves used r.svg)
+  const wordmarkSvg = r.wordmarkSvg || r.svg;
+  lbWordmarkWrap.innerHTML = wordmarkSvg || '';
+  const svg = lbWordmarkWrap.querySelector('svg');
   if (svg) {
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
@@ -1282,21 +1394,39 @@ function exportSVG(svgStr, filename) {
   URL.revokeObjectURL(url);
 }
 
-function exportPNG(svgStr, filename) {
-  const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml' }));
-  const img = new Image();
-  img.onload = () => {
-    const c = document.createElement('canvas');
-    c.width = 1200; c.height = 600;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, 1200, 600);
-    ctx.drawImage(img, 0, 0, 1200, 600);
-    trigger(c.toDataURL('image/png'), filename);
-    URL.revokeObjectURL(url);
-  };
-  img.onerror = () => { exportSVG(svgStr, filename.replace('.png', '.svg')); URL.revokeObjectURL(url); };
-  img.src = url;
+async function exportCombinedPNG(markImageUrl, wordmarkSvg, filename) {
+  const W = 800;
+  const MARK_H = 800;
+  const WORDMARK_H = 200;
+  const canvas = document.createElement('canvas');
+  canvas.width  = W;
+  canvas.height = MARK_H + WORDMARK_H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (markImageUrl) {
+    await new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload  = () => { ctx.drawImage(img, 0, 0, W, MARK_H); resolve(); };
+      img.onerror = resolve;
+      img.src = markImageUrl;
+    });
+  }
+
+  if (wordmarkSvg) {
+    await new Promise(resolve => {
+      const blob = new Blob([wordmarkSvg], { type: 'image/svg+xml' });
+      const url  = URL.createObjectURL(blob);
+      const img  = new Image();
+      img.onload  = () => { ctx.drawImage(img, 0, MARK_H, W, WORDMARK_H); URL.revokeObjectURL(url); resolve(); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+      img.src = url;
+    });
+  }
+
+  trigger(canvas.toDataURL('image/png'), filename);
 }
 
 function trigger(href, filename) {
@@ -1347,13 +1477,14 @@ function init() {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
-    if (r) exportSVG(r.svg, `${slug(p.brandName)}-option-${state.lightboxSlot + 1}.svg`);
+    const svg = r?.wordmarkSvg || r?.svg;
+    if (svg) exportSVG(svg, `${slug(p.brandName)}-wordmark-${state.lightboxSlot + 1}.svg`);
   });
   $('lb-png-btn').addEventListener('click', () => {
     const p   = getCurrentProject();
     const gen = p?.generations.find(g => g.id === state.lightboxGenId);
     const r   = gen?.results[state.lightboxSlot];
-    if (r) exportPNG(r.svg, `${slug(p.brandName)}-option-${state.lightboxSlot + 1}.png`);
+    if (r) exportCombinedPNG(r.markImageUrl, r.wordmarkSvg || r.svg, `${slug(p.brandName)}-logo-${state.lightboxSlot + 1}.png`);
   });
 
   // Projects bar
