@@ -1299,8 +1299,9 @@ async function generateLogo(p, gen, i, variationHint) {
   populateSlot(gen, i);
   saveProjects();
 
-  // Phase 2: Replicate generates mark image
+  // Phase 2: Replicate generates mark image — staggered by slot index to avoid rate limits
   if (genData.markPrompt) {
+    if (i > 0) await wait(i * 5000);
     const markWrapId = `slot-mark-${gen.id}-${i}`;
     let elapsed = 0;
     const countdown = setInterval(() => {
