@@ -21,8 +21,11 @@ DECIDING THE MARK:
 - Reference: Bauhaus, Swiss modernism, constructivism, editorial design, independent record label aesthetics — depending on moodboard energy
 
 WRITING THE RECRAFT PROMPT:
-- Begin with exactly: "flat graphic design, logo mark, white background, no text, no letters, no words, vector style, clean, minimal, "
-- Describe the specific mark concept concretely — not "geometric shapes" but "two offset squares rotated 45 degrees forming a diamond negative space at their intersection"
+- Begin with exactly: "flat graphic design, logo mark, white background, no text, no letters, no words, clean, minimal, "
+- NEVER include the brand name or literal theme words — the brief is raw material, not copy to paste. 'Space Age Skin' must never become 'space', 'planet', 'saturn', or 'skin' in the prompt. 'Forest Coffee' must never become 'tree' or 'leaf'.
+- Instead, translate the brief's feeling and visual references into abstract graphic design language: what design movement does it belong to? what is its visual tension? what is its formal structure? E.g. 'Space Age Skin' → "abstract geometric logo mark, orbital arc forms, precision engineering diagram aesthetic, high contrast black and white, Bauhaus geometry"
+- Lead with the design movement and aesthetic, not the subject matter: "Swiss modernist mark, two interlocking arcs..." not "coffee cup transformed into..."
+- When the brief contains literal-image-prone themes (space, nature, animals, food), explicitly block them: "no planets, no stars, no literal space imagery" / "no leaves, no trees, no literal nature" / etc.
 - Reference the moodboard visual language: cold/industrial → "hard edges, technical precision, Bauhaus geometry"; warm/editorial → "high contrast, modernist Swiss, graceful construction"; bold/expressive → "heavy fills, strong silhouette, constructivist energy"; dark/minimal → "hairline construction, extreme negative space, restrained"
 - End with: "no text, no typography, no letters, no gradients, no drop shadows, no photorealism, no 3D rendering, graphic design aesthetic, professional logo mark"
 - Length: 60–100 words total
