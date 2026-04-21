@@ -3,7 +3,7 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt, negativePrompt } = req.body || {};
+  const { prompt } = req.body || {};
   if (!prompt) {
     return res.status(400).json({ error: 'Missing required field: prompt' });
   }
@@ -23,7 +23,6 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         input: {
           prompt,
-          negative_prompt: negativePrompt || '',
           style: 'vector_illustration',
           width: 1024,
           height: 1024,

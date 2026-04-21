@@ -1327,10 +1327,7 @@ async function generateLogo(p, gen, i) {
     const repRes = await fetch('/api/replicate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        prompt: markPrompt,
-        negativePrompt: 'text, letters, words, typography, font, numbers, watermark, signature, label',
-      }),
+      body: JSON.stringify({ prompt: markPrompt }),
       signal: controller.signal,
     });
     clearTimeout(killTimer);
