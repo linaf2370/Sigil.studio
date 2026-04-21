@@ -358,7 +358,7 @@
 
     #meta-brand { flex: 1; }
 
-    #clear-history-btn {
+    #clear-history-btn, #debug-storage-btn {
       background: transparent;
       border: none;
       color: #302e2c;
@@ -371,9 +371,9 @@
       transition: color 0.1s;
       flex-shrink: 0;
     }
-    #clear-history-btn:hover { color: var(--muted); }
-    #clear-history-btn::before { content: '[ '; }
-    #clear-history-btn::after  { content: ' ]'; }
+    #clear-history-btn:hover, #debug-storage-btn:hover { color: var(--muted); }
+    #clear-history-btn::before, #debug-storage-btn::before { content: '[ '; }
+    #clear-history-btn::after,  #debug-storage-btn::after  { content: ' ]'; }
 
     /* ── CANVAS HISTORY ───────────────────────────── */
     #canvas-history { flex: 1; overflow-y: auto; min-height: 0; }
@@ -667,6 +667,7 @@
     <div class="canvas-meta">
       <span id="meta-brand">—</span>
       <span id="meta-count">—</span>
+      <button id="debug-storage-btn">Debug Storage</button>
       <button id="clear-history-btn">Clear History</button>
       <span id="meta-date">—</span>
     </div>
@@ -750,23 +751,44 @@ function newProjectData(id) {
   return { id, brandName: '', brief: '', style: 'wordmark', moodboardImages: [], moodboardAnalysis: null, generations: [] };
 }
 
+function compressProjectsForStorage(projects) {
+  return projects.map(p => ({
+    ...p,
+    generations: p.generations.slice(0, 3).map(g => ({
+      ...g,
+      results: g.results.map(r => r ? {
+        ...r,
+        svg: r.svg && r.svg.length > 50000 ? r.svg.slice(0, 50000) : r.svg,
+      } : r),
+    })),
+  }));
+}
+
 function saveProjectsToStorage() {
-  const payload = {
-    projects: state.projects,
-    currentProjectId: state.currentProjectId,
-  };
+  console.log('Saving to localStorage:', state.projects.length, 'projects');
+
+  const payload = { projects: state.projects, currentProjectId: state.currentProjectId };
+  let serialized = JSON.stringify(payload);
+  const sizeMB = (serialized.length / (1024 * 1024)).toFixed(2);
+
+  if (serialized.length > 4 * 1024 * 1024) {
+    console.warn('[Sigil] Payload ' + sizeMB + 'MB exceeds 4MB — compressing (last 3 gens, SVGs capped at 50k chars)');
+    const compressed = { ...payload, projects: compressProjectsForStorage(payload.projects) };
+    serialized = JSON.stringify(compressed);
+    console.log('[Sigil] Compressed to', (serialized.length / (1024 * 1024)).toFixed(2), 'MB');
+  }
+
   try {
-    const serialized = JSON.stringify(payload);
     localStorage.setItem('sigil_projects', serialized);
     const svgCount = state.projects.reduce((n, p) =>
       n + p.generations.reduce((m, g) => m + g.results.filter(r => r?.svg).length, 0), 0);
-    console.log('[Sigil] Saved:', state.projects.length, 'project(s),', svgCount, 'SVG(s)');
+    console.log('[Sigil] Saved:', state.projects.length, 'project(s),', svgCount, 'SVG(s) —', sizeMB, 'MB');
   } catch (err) {
-    console.warn('[Sigil] Full save failed (' + err.message + ') — retrying without moodboard images');
+    console.warn('[Sigil] Save failed (' + err.message + ') — retrying without moodboard images');
     try {
       const slim = { ...payload, projects: payload.projects.map(p => ({ ...p, moodboardImages: [] })) };
       localStorage.setItem('sigil_projects', JSON.stringify(slim));
-      console.log('[Sigil] Saved (moodboard images stripped to fit storage)');
+      console.log('[Sigil] Saved without moodboard images');
     } catch (err2) {
       console.error('[Sigil] Save failed completely:', err2.message);
     }
@@ -774,6 +796,7 @@ function saveProjectsToStorage() {
 }
 
 function loadProjectsFromStorage() {
+  console.log('Loading from localStorage:', localStorage.getItem('sigil_projects'));
   try {
     const raw = localStorage.getItem('sigil_projects');
     if (!raw) {
@@ -1323,6 +1346,25 @@ function init() {
   moodboardZone.addEventListener('dragleave', () => moodboardZone.classList.remove('drag-over'));
   moodboardZone.addEventListener('drop',      e => { e.preventDefault(); moodboardZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
   moodboardFile.addEventListener('change',    e => { handleFiles(e.target.files); moodboardFile.value = ''; });
+
+  $('debug-storage-btn').addEventListener('click', () => {
+    const raw = localStorage.getItem('sigil_projects') || '';
+    const sizeMB = (raw.length / (1024 * 1024)).toFixed(3);
+    let msg = 'SIGIL STORAGE DEBUG\n' + '─'.repeat(32) + '\n';
+    msg += 'localStorage size: ' + sizeMB + 'MB / ~5MB limit\n\n';
+    msg += 'Projects: ' + state.projects.length + '\n\n';
+    state.projects.forEach((p, i) => {
+      msg += 'Project ' + (i + 1) + ': "' + (p.brandName || 'Untitled') + '"\n';
+      msg += '  Generations: ' + p.generations.length + '\n';
+      p.generations.forEach((gen, j) => {
+        const svgs   = gen.results.filter(r => r?.svg).length;
+        const svgKB  = gen.results.reduce((n, r) => n + (r?.svg ? r.svg.length / 1024 : 0), 0).toFixed(1);
+        msg += '  Gen ' + (j + 1) + ': ' + svgs + '/3 SVGs (' + svgKB + 'KB)\n';
+      });
+    });
+    console.log('[Sigil] Debug dump:', msg);
+    alert(msg);
+  });
 
   clearHistoryBtn.addEventListener('click', () => {
     const p = getCurrentProject();
