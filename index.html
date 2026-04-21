@@ -750,30 +750,64 @@ function newProjectData(id) {
   return { id, brandName: '', brief: '', style: 'wordmark', moodboardImages: [], moodboardAnalysis: null, generations: [] };
 }
 
-function saveProjects() {
+function saveProjectsToStorage() {
+  const payload = {
+    projects: state.projects,
+    currentProjectId: state.currentProjectId,
+  };
   try {
-    localStorage.setItem('sigil_projects', JSON.stringify(state.projects));
-    localStorage.setItem('sigil_current_project', state.currentProjectId);
-  } catch {
+    const serialized = JSON.stringify(payload);
+    localStorage.setItem('sigil_projects', serialized);
+    const svgCount = state.projects.reduce((n, p) =>
+      n + p.generations.reduce((m, g) => m + g.results.filter(r => r?.svg).length, 0), 0);
+    console.log('[Sigil] Saved:', state.projects.length, 'project(s),', svgCount, 'SVG(s)');
+  } catch (err) {
+    console.warn('[Sigil] Full save failed (' + err.message + ') — retrying without moodboard images');
     try {
-      const slim = state.projects.map(p => ({ ...p, moodboardImages: [] }));
+      const slim = { ...payload, projects: payload.projects.map(p => ({ ...p, moodboardImages: [] })) };
       localStorage.setItem('sigil_projects', JSON.stringify(slim));
-      localStorage.setItem('sigil_current_project', state.currentProjectId);
-    } catch { /* silent fail */ }
+      console.log('[Sigil] Saved (moodboard images stripped to fit storage)');
+    } catch (err2) {
+      console.error('[Sigil] Save failed completely:', err2.message);
+    }
   }
 }
 
-function initProjects() {
-  const saved = localStorage.getItem('sigil_projects');
-  const savedCurrent = localStorage.getItem('sigil_current_project');
-  if (saved) {
-    try { state.projects = JSON.parse(saved); } catch { state.projects = []; }
+function loadProjectsFromStorage() {
+  try {
+    const raw = localStorage.getItem('sigil_projects');
+    if (!raw) {
+      console.log('[Sigil] No saved data found — starting fresh');
+      state.projects = [newProjectData(uid())];
+      state.currentProjectId = state.projects[0].id;
+      return;
+    }
+    const data = JSON.parse(raw);
+    // Support old format (plain array) and new format ({projects, currentProjectId})
+    if (Array.isArray(data)) {
+      state.projects = data;
+      const legacyId = localStorage.getItem('sigil_current_project');
+      state.currentProjectId = (legacyId && state.projects.find(p => p.id === legacyId))
+        ? legacyId : state.projects[0]?.id;
+    } else {
+      state.projects        = data.projects || [];
+      state.currentProjectId = data.currentProjectId || null;
+    }
+    if (!state.projects.length) {
+      state.projects = [newProjectData(uid())];
+    }
+    if (!state.currentProjectId || !state.projects.find(p => p.id === state.currentProjectId)) {
+      state.currentProjectId = state.projects[0].id;
+    }
+    const genCount = state.projects.reduce((n, p) => n + (p.generations?.length || 0), 0);
+    const svgCount = state.projects.reduce((n, p) =>
+      n + (p.generations?.reduce((m, g) => m + (g.results?.filter(r => r?.svg).length || 0), 0) || 0), 0);
+    console.log('[Sigil] Loaded:', state.projects.length, 'project(s),', genCount, 'generation(s),', svgCount, 'SVG(s)');
+  } catch (err) {
+    console.error('[Sigil] Load failed (' + err.message + ') — starting fresh');
+    state.projects = [newProjectData(uid())];
+    state.currentProjectId = state.projects[0].id;
   }
-  if (!state.projects.length) {
-    state.projects.push(newProjectData(uid()));
-  }
-  state.currentProjectId = (savedCurrent && state.projects.find(p => p.id === savedCurrent))
-    ? savedCurrent : state.projects[0].id;
 }
 
 function createProject() {
@@ -783,7 +817,7 @@ function createProject() {
   state.currentProjectId = p.id;
   loadProjectIntoUI(p);
   renderProjectsBar();
-  saveProjects();
+  saveProjectsToStorage();
 }
 
 function switchProject(id) {
@@ -792,7 +826,7 @@ function switchProject(id) {
   state.currentProjectId = id;
   loadProjectIntoUI(getCurrentProject());
   renderProjectsBar();
-  saveProjects();
+  saveProjectsToStorage();
 }
 
 function deleteProject(id) {
@@ -803,7 +837,7 @@ function deleteProject(id) {
     loadProjectIntoUI(getCurrentProject());
   }
   renderProjectsBar();
-  saveProjects();
+  saveProjectsToStorage();
 }
 
 function syncCurrentProjectFromUI() {
@@ -864,7 +898,7 @@ async function handleFiles(fileList) {
     p.moodboardImages.push({ dataUrl, base64, mediaType: 'image/jpeg' });
   }
   renderMoodboard();
-  saveProjects();
+  saveProjectsToStorage();
 }
 
 function readBase64(file) {
@@ -912,7 +946,7 @@ function renderMoodboardThumbs(imgs) {
     rm.addEventListener('click', e => {
       e.stopPropagation();
       const p = getCurrentProject();
-      if (p) { p.moodboardImages.splice(i, 1); renderMoodboard(); saveProjects(); }
+      if (p) { p.moodboardImages.splice(i, 1); renderMoodboard(); saveProjectsToStorage(); }
     });
     const el = document.createElement('img');
     el.src = img.dataUrl; el.alt = '';
@@ -1117,7 +1151,7 @@ async function generate() {
     state.generating        = false;
     generateBtn.disabled    = false;
     generateBtn.textContent = 'Generate';
-    saveProjects();
+    saveProjectsToStorage();
   }
 }
 
@@ -1165,7 +1199,7 @@ async function generateLogo(p, gen, i) {
     const data = await res.json();
     gen.results[i] = { svg: data.svg, tags: buildTags(p) };
     populateSlot(gen, i);
-    saveProjects();
+    saveProjectsToStorage();
 
   } catch (err) {
     setSlotError(gen.id, i, err.message || 'Generation failed');
@@ -1269,18 +1303,18 @@ function trigger(href, filename) {
 
 // ── INIT ───────────────────────────────────────────
 function init() {
-  initProjects();
+  loadProjectsFromStorage();
   metaDate.textContent = fmtDate(new Date());
 
   brandInput.addEventListener('input', e => {
     const p = getCurrentProject();
-    if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); saveProjects(); }
+    if (p) { p.brandName = e.target.value.trim(); renderProjectsBar(); saveProjectsToStorage(); }
   });
   briefInput.addEventListener('input', e => {
-    const p = getCurrentProject(); if (p) { p.brief = e.target.value.trim(); saveProjects(); }
+    const p = getCurrentProject(); if (p) { p.brief = e.target.value.trim(); saveProjectsToStorage(); }
   });
   document.querySelectorAll('input[name="style"]').forEach(r =>
-    r.addEventListener('change', e => { const p = getCurrentProject(); if (p) { p.style = e.target.value; saveProjects(); } })
+    r.addEventListener('change', e => { const p = getCurrentProject(); if (p) { p.style = e.target.value; saveProjectsToStorage(); } })
   );
   generateBtn.addEventListener('click', generate);
 
@@ -1297,7 +1331,7 @@ function init() {
     p.moodboardAnalysis = null;
     canvasHistory.innerHTML = '';
     metaCount.textContent = '—';
-    saveProjects();
+    saveProjectsToStorage();
   });
 
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
