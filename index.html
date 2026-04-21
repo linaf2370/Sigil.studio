@@ -1064,8 +1064,28 @@ function buildSlotEl(gen, i) {
     if (svgContent) exportSVG(svgContent, `${slug(brandName)}-logo-${i + 1}.svg`);
   });
 
-  if (gen.results[i]) {
-    populateSlot(gen, i);
+  const r = gen.results[i];
+  if (r) {
+    // Populate directly using local element references — getElementById won't work
+    // here because the slot hasn't been inserted into the document yet.
+    const svgContent = r.svg || r.wordmarkSvg;
+    const imageUrl   = r.imageUrl || r.markImageUrl;
+    if (svgContent) {
+      svgWrap.innerHTML = svgContent;
+      const svgEl = svgWrap.querySelector('svg');
+      if (svgEl) { svgEl.style.width = '100%'; svgEl.style.height = 'auto'; svgEl.style.display = 'block'; }
+      svgWrap.classList.add('has-svg');
+    } else if (imageUrl) {
+      const img = document.createElement('img');
+      img.src = imageUrl; img.alt = '';
+      svgWrap.appendChild(img);
+      svgWrap.classList.add('has-svg');
+    }
+    btnPng.disabled = !(svgContent || imageUrl);
+    btnSvg.disabled = !svgContent;
+    if (r.tags && r.tags.length) {
+      tagsEl.innerHTML = r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+    }
   } else {
     svgWrap.innerHTML = '<div class="slot-loading-inner"><div class="loading-rect"></div><div class="loading-label">Generating…</div></div>';
   }
